@@ -15,6 +15,10 @@ const gridSize = 1000;
 const gridDivisions = 500;
 const gridHelper = new THREE.GridHelper(gridSize, gridDivisions, 0x808080, 0x808080);
 
+let lastTime = performance.now();
+let frameCount = 0;
+let fps = 60;
+let maxfps = fps;
 let score = 0;
 let scoreCounter = 0;
 let mouseX = 0;
@@ -70,8 +74,8 @@ class Ball {
       this.mesh.rotation.y = y;
   }
   update() {
-    this.mesh.rotation.x += 0.01;
-    this.mesh.rotation.y += 0.01;
+    this.mesh.rotation.x += 0.01 * 60 / fps;
+    this.mesh.rotation.y += 0.01 * 60 / fps;
   }
   move(dx, dy, dz) {
     this.mesh.position.set(this.mesh.position.x + dx, this.mesh.position.y + dy, this.mesh.position.z + dz);
@@ -127,7 +131,6 @@ function moveallballs(dx, dy, dz) {
 window.addEventListener('wheel', (e) => {
   camera.position.z += e.deltaY * 0.01; // Adjust zoom speed as needed
   camera.position.z = Math.max(1, camera.position.z); // Prevent zooming too close
-  console.log("cameraZ: "+camera.position.z)
 });
 
 window.addEventListener('keydown', (e) => {
@@ -158,7 +161,18 @@ window.addEventListener('mousemove', (event) => {
   mouseX = event.clientX - rect.left;
   mouseY = event.clientY - rect.top;
 });
+function calculateFPS() {
+  let now = performance.now();
+  frameCount++;
 
+  if (now - lastTime >= 1000) { // Every 1 second
+    fps = frameCount;
+    frameCount = 0;
+    lastTime = now;
+  }
+
+  requestAnimationFrame(calculateFPS);
+}
 function getrandomcolor() {
   var r = Math.random()*10;
   if(r>5) return 0xFF0000
@@ -184,7 +198,7 @@ function forcegravityonballs() {
     if (ball.type === "shrink") {
       // Move shrink balls toward the sphere (player)
       let direction = sphere.position.clone().sub(ball.mesh.position).normalize();
-      ball.move(direction.x * speed * 0.5, direction.y * speed * 0.5, direction.z * speed * 0.5);
+      ball.move(direction.x * speed * 0.5 * 60 / fps, direction.y * speed * 0.5 * 60 / fps, direction.z * speed * 0.5 * 60 / fps);
     } else {
       const nearestBall = getnearestball(ball);
 
@@ -212,7 +226,7 @@ function forcegravityonballs() {
             direction.x *= 3;
             direction.y *= 3;
           }
-          ball.move(direction.x * speedFactor, direction.y * speedFactor, direction.z * speedFactor);
+          ball.move(direction.x * speedFactor * 60 / fps, direction.y * speedFactor * 60 / fps, direction.z * speedFactor * 60 / fps);
 
           if (distance < (ball.radius + nearestBall.radius) / 2 && !spherenearer && nearestBall.type === "normal") {
             toRemove.add(ball);
@@ -300,7 +314,6 @@ function spawnEnemyIfPossible() {
 
       disappearcounter = 0;
       enemycounter++;
-      console.log(enemycounter);
     }
   }
 }
@@ -332,8 +345,8 @@ function updateSphere() {
   geometry = new THREE.SphereGeometry(radius, 16, 16);
   sphere.geometry = geometry;
   sphere.rotation.set(sphere.rotation.x, sphere.rotation.y, sphere.rotation.z);
-  sphere.rotation.x += 0.01;
-  sphere.rotation.y += 0.01;
+  sphere.rotation.x += 0.01 * 60 / fps;
+  sphere.rotation.y += 0.01 * 60 / fps;
 }
 
 function handleMovement() {
@@ -360,13 +373,12 @@ function handleMovement() {
     dy /= magnitude;
   }
 
-  moveallballs(dx * speed, dy * speed, dz);
+  moveallballs(dx * speed * 60 / fps, dy * speed * 60 / fps, dz);
 }
 
 function update() {
   ballcounter++;
   disappearcounter++;
-
   updateSphere();
   checkIfBallIsInsideSphere();
   forcegravityonballs();
@@ -376,6 +388,8 @@ function update() {
   handleMovement();
 
   balls.forEach(ball => ball.update());
+
+  if(fps>maxfps) maxfps = fps;
 
   for(let i = Math.abs(score)/1000;i>0;i--){
     if(score>scoreCounter)      scoreCounter++;
@@ -397,4 +411,6 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 // Start the game loop
+calculateFPS();
 gameLoop();
+
