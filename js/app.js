@@ -11,6 +11,10 @@ const keys = {
   w: false, s: false, a: false, d: false
 };
 const material = new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true });
+const gridSize = 1000;
+const gridDivisions = 500;
+const gridHelper = new THREE.GridHelper(gridSize, gridDivisions, 0x808080, 0x808080);
+
 let score = 0;
 let scoreCounter = 0;
 let mouseX = 0;
@@ -25,14 +29,17 @@ let targetRadius = radius; // Target radius for smooth animation
 let geometry = new THREE.SphereGeometry(radius, 16, 16);
 let sphere = new THREE.Mesh(geometry, material);
 let balls = [];
-scene.add(sphere);
-camera.position.z = 9;
+  scene.add(sphere);
+  camera.position.z = 9;
 let targetCameraZ = camera.position.z;
 let ballcounter = 0;
 let disappearcounter = 0;
 let enemycounter = 0;
 let enemymaxcounter = 10;
-renderer.setSize(cwidth, cheight);
+  renderer.setSize(cwidth, cheight);
+  gridHelper.position.set(0, 0, -3);
+  gridHelper.rotation.x = Math.PI / 2;
+  scene.add(gridHelper);
 
 class Ball {
   constructor(x, y, z, ballradius, color, type = "normal") {
@@ -113,6 +120,8 @@ function makeFPSGreatAgain(){
 
 function moveallballs(dx, dy, dz) {
   balls.forEach(ball => ball.move(dx, dy, dz));
+  gridHelper.position.x += dx;
+  gridHelper.position.y += dy;
 }
 
 window.addEventListener('wheel', (e) => {
