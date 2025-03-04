@@ -6,7 +6,11 @@ const cwidth = 1400;
 const cheight = 900;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, cwidth / cheight, 0.1, 1000);
-
+const keys = {
+  ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
+  w: false, s: false, a: false, d: false
+};
+const material = new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true });
 let score = 0;
 let scoreCounter = 0;
 let mouseX = 0;
@@ -16,7 +20,18 @@ let speedfactor = 0.05;
 let speed = 0.035 + 0.3*speedfactor;
 let stepupscore = 10000;
 let scorebetween = 0;
-
+let radius = 1;
+let targetRadius = radius; // Target radius for smooth animation
+let geometry = new THREE.SphereGeometry(radius, 16, 16);
+let sphere = new THREE.Mesh(geometry, material);
+let balls = [];
+scene.add(sphere);
+camera.position.z = 9;
+let targetCameraZ = camera.position.z;
+let ballcounter = 0;
+let disappearcounter = 0;
+let enemycounter = 0;
+let enemymaxcounter = 10;
 renderer.setSize(cwidth, cheight);
 
 class Ball {
@@ -59,31 +74,6 @@ class Ball {
     return distance + this.radius <= sphere.geometry.parameters.radius;
   }
 }
-
-const keys = {
-  ArrowUp: false,
-  ArrowDown: false,
-  ArrowLeft: false,
-  ArrowRight: false,
-  w: false,
-  s: false,
-  a: false,
-  d: false
-};
-const material = new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true });
-let radius = 1;
-let targetRadius = radius; // Target radius for smooth animation
-let geometry = new THREE.SphereGeometry(radius, 16, 16);
-let sphere = new THREE.Mesh(geometry, material);
-let balls = [];
-  scene.add(sphere);
-  camera.position.z = 9;
-let targetCameraZ = camera.position.z;
-let ballcounter = 0;
-let disappearcounter = 0;
-let enemycounter = 0;
-let enemymaxcounter = 10;
-
 function increaseradius(increase) {
   // Set target radius for smooth animation
   targetRadius += increase;
@@ -122,7 +112,7 @@ function makeFPSGreatAgain(){
 }
 
 function moveallballs(dx, dy, dz) {
-  balls.forEach(ball => ball.move(dx, -dy, dz));
+  balls.forEach(ball => ball.move(dx, dy, dz));
 }
 
 window.addEventListener('wheel', (e) => {
@@ -237,7 +227,6 @@ function forcegravityonballs() {
   balls.push(...toAdd);
 }
 
-
 function getnearestball(targetBall) {
   let nearestBall = null;
   let minDistance = Infinity;
@@ -255,37 +244,22 @@ function getnearestball(targetBall) {
   return nearestBall;
 }
 
-function update() {
-  ballcounter++;
-  disappearcounter++;
-
-  // Store rotation
-  const rotationX = sphere.rotation.x;
-  const rotationY = sphere.rotation.y;
-  const rotationZ = sphere.rotation.z;
-
-  // Smoothly adjust radius
-  radius += (targetRadius - radius) / 10;
-  geometry = new THREE.SphereGeometry(radius, 16, 16);
-  sphere.geometry = geometry;
-
-  // Reapply rotation
-  sphere.rotation.set(rotationX, rotationY, rotationZ);
-
+function checkIfBallIsInsideSphere() {
   balls.forEach((ball, index) => {
     if (ball.isCompletelyInside(sphere) && ball.radius < sphere.geometry.parameters.radius) {
       scene.remove(ball.mesh);
       balls.splice(index, 1);
       if(ball.type === "shrink"){
-        increaseradius( - (ball.radius / 30));
+        increaseradius( - (ball.radius / 20));
         enemycounter--;
       } else {
-        increaseradius(ball.radius / 30);
+        increaseradius(ball.radius / 20);
       }
     }
   });
+}
 
-  forcegravityonballs();
+function spawnEnemyIfPossible() {
   if (disappearcounter > 60 && balls.length >= 20 && enemycounter < enemymaxcounter) {
     // Find the ball furthest away from the camera
     let maxDistance = -Infinity;
@@ -320,7 +294,9 @@ function update() {
       console.log(enemycounter);
     }
   }
+}
 
+function spawnNewBallIfPossible() {
   if (ballcounter >= 20 && balls.length <= 200) {
     let x = sphere.position.x + (Math.random() * 40 * radius - 20 * radius);
     let y = sphere.position.y + (Math.random() * 40 * radius - 20 * radius);
@@ -328,25 +304,9 @@ function update() {
     ballcounter = 0;
     balls.push(new Ball(x, y, z, getrandomradius(radius), getrandomcolor()));
   }
+}
 
-  balls.forEach(ball => ball.update());
-
-  let dx = 0, dy = 0, dz = 0;
-
-  if (isMovingToMouse) {
-    let diffX = mouseX - cwidth / 2;
-    let diffY = mouseY - cheight / 2;
-    let distance = Math.sqrt(diffX * diffX + diffY * diffY);
-    if (distance > 1) {
-      dx = -(diffX / distance) * speed;
-      dy = -(diffY / distance) * speed;
-    }
-  }
-
-  if (keys.ArrowUp || keys.w) dy += speed;
-  if (keys.ArrowDown || keys.s) dy -= speed;
-  if (keys.ArrowLeft || keys.a) dx += speed;
-  if (keys.ArrowRight || keys.d) dx -= speed;
+function checkDebugInputs() {
   if (keys.a && keys.s && keys.d && keys.w && keys.ArrowUp){
     for( let i = 0;i<100;i++){
       let x = sphere.position.x + (Math.random() * 40 * radius - 20 * radius);
@@ -355,42 +315,77 @@ function update() {
       balls.push(new Ball(x, y, z, getrandomradius(radius), getrandomcolor()));
     }
   }
-    if (keys.a && keys.s && keys.d && keys.w && keys.ArrowDown) makeFPSGreatAgain();
+  if (keys.a && keys.s && keys.d && keys.w && keys.ArrowDown) makeFPSGreatAgain();
+}
 
-        const magnitude = Math.sqrt(dx * dx + dy * dy);
+function updateSphere() {
+  radius += (targetRadius - radius) / 10;
+  geometry = new THREE.SphereGeometry(radius, 16, 16);
+  sphere.geometry = geometry;
+  sphere.rotation.set(sphere.rotation.x, sphere.rotation.y, sphere.rotation.z);
+  sphere.rotation.x += 0.01;
+  sphere.rotation.y += 0.01;
+}
+
+function handleMovement() {
+  let dx = 0, dy = 0, dz = 0;
+
+  if (isMovingToMouse) {
+    let diffX = mouseX - cwidth / 2;
+    let diffY = mouseY - cheight / 2;
+    let distance = Math.sqrt(diffX * diffX + diffY * diffY);
+    if (distance > 1) {
+      dx = -(diffX / distance) * speed;
+      dy = (diffY / distance) * speed;
+    }
+  }
+
+  if (keys.ArrowUp || keys.w) dy -= speed;
+  if (keys.ArrowDown || keys.s) dy += speed;
+  if (keys.ArrowLeft || keys.a) dx += speed;
+  if (keys.ArrowRight || keys.d) dx -= speed;
+
+  let magnitude = Math.sqrt(dx * dx + dy * dy);
   if (magnitude > 0) {
     dx /= magnitude;
     dy /= magnitude;
   }
 
-  for(let i = Math.abs(score)/1000;i>0;i--){
-    if(score>scoreCounter) scoreCounter++;
-    else if(score<scoreCounter) scoreCounter--;
-    document.getElementById("score").innerText = scoreCounter+" pt"
-  }
   moveallballs(dx * speed, dy * speed, dz);
+}
+
+function update() {
+  ballcounter++;
+  disappearcounter++;
+
+  updateSphere();
+  checkIfBallIsInsideSphere();
+  forcegravityonballs();
+  spawnEnemyIfPossible();
+  spawnNewBallIfPossible();
+  checkDebugInputs();
+  handleMovement();
+
+  balls.forEach(ball => ball.update());
+
+  for(let i = Math.abs(score)/1000;i>0;i--){
+    if(score>scoreCounter)      scoreCounter++;
+    else if(score<scoreCounter) scoreCounter--;
+    document.getElementById("score").innerText = scoreCounter + " pt";
+  }
 
   if(targetCameraZ > camera.position.z || targetCameraZ < camera.position.z){
     camera.position.z+=((targetCameraZ-camera.position.z)/100)
   }
-
-  // Add rotation back
-  sphere.rotation.x += 0.01;
-  sphere.rotation.y += 0.01;
 }
-
-
-
 
 function redraw() {
   renderer.render(scene, camera);
 }
-
 function gameLoop() {
   update();
   redraw();
   requestAnimationFrame(gameLoop);
 }
-
 // Start the game loop
 gameLoop();
