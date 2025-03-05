@@ -38,6 +38,8 @@ let balls = [];
 let targetCameraZ = camera.position.z;
 let ballcounter = 0;
 let disappearcounter = 0;
+let targetCameraRotationX = camera.rotation.x;
+let targetCameraRotationY = camera.rotation.y;
 let enemycounter = 0;
 let enemymaxcounter = 10;
   renderer.setSize(cwidth, cheight);
@@ -379,11 +381,12 @@ function handleMovement() {
     }
   }
 
-  if (keys.ArrowUp || keys.w) dy -= speed;
-  if (keys.ArrowDown || keys.s) dy += speed;
-  if (keys.ArrowLeft || keys.a) dx += speed;
-  if (keys.ArrowRight || keys.d) dx -= speed;
-
+  if (keys.ArrowUp || keys.w) targetCameraRotationX = 0.11 * Math.PI;
+  else if (keys.ArrowDown || keys.s) targetCameraRotationX = - 0.11 * Math.PI;
+  else targetCameraRotationX = 0;
+  if (keys.ArrowLeft || keys.a) targetCameraRotationY = 0.11 * Math.PI;
+  else if (keys.ArrowRight || keys.d) targetCameraRotationY = - 0.11 * Math.PI;
+  else targetCameraRotationY = 0;
   let magnitude = Math.sqrt(dx * dx + dy * dy);
   if (magnitude > 0) {
     dx /= magnitude;
@@ -391,6 +394,8 @@ function handleMovement() {
   }
 
   moveallballs(dx * speed * 60 / fps, dy * speed * 60 / fps, dz);
+  camera.rotation.x += (targetCameraRotationX-camera.rotation.x)/(fps/3);
+  camera.rotation.y += (targetCameraRotationY-camera.rotation.y)/(fps/3);
 }
 
 function update() {
