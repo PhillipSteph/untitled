@@ -370,15 +370,22 @@ function updateSphere() {
 
 function handleMovement() {
   let dx = 0, dy = 0, dz = 0;
-
+  let Y, X;
+  if(keys.ArrowUp || keys.w) Y = mouseY - cheight/4;
+  else if(keys.ArrowDown || keys.s) Y = mouseY + cheight/4;
+  else Y = mouseY;
+  if(keys.ArrowLeft || keys.a) X = mouseX - cwidth/7;
+  else if(keys.ArrowRight || keys.d) X = mouseX + cwidth/7;
+  else X = mouseX;
   if (isMovingToMouse) {
-    let diffX = mouseX - cwidth / 2;
-    let diffY = mouseY - cheight / 2;
+    let diffX = X - cwidth / 2;
+    let diffY = Y - cheight / 2;
     let distance = Math.sqrt(diffX * diffX + diffY * diffY);
     if (distance > 1) {
       dx = -(diffX / distance) * speed;
       dy = (diffY / distance) * speed;
     }
+
   }
 
   if (keys.ArrowUp || keys.w) targetCameraRotationX = 0.11 * Math.PI;
