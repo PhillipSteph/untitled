@@ -11,9 +11,9 @@ const keys = {
   w: false, s: false, a: false, d: false
 };
 const material = new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true });
-const gridSize = 1000;
-const gridDivisions = 500;
-const gridHelper = new THREE.GridHelper(gridSize, gridDivisions, 0x808080, 0x808080);
+let gridSize = 1000;
+let gridDivisions = 500;
+let gridHelper = new THREE.GridHelper(gridSize, gridDivisions, 0x808080, 0x808080);
 
 let lastTime = performance.now();
 let frameCount = 0;
@@ -91,8 +91,18 @@ function increaseradius(increase) {
   speed = 0.035 + 0.3 * targetRadius * speedfactor;
   let beforescore = score;
   score = Math.floor((targetRadius - 1) * 10000) + scorebetween;
-  if(Math.floor(beforescore/stepupscore) === Math.floor(score/stepupscore) + 1 || Math.floor(beforescore/stepupscore) === Math.floor(score/stepupscore) - 1){
+  if((Math.floor(beforescore/stepupscore) === Math.floor(score/stepupscore) + 1 || Math.floor(beforescore/stepupscore) === Math.floor(score/stepupscore) - 1) && score>1000){
       targetCameraZ = 9 + (radius-1)*9
+      scene.remove(gridHelper)
+      gridSize *= 2;
+      gridDivisions = gridDivisions * 1.25;
+      gridHelper = new THREE.GridHelper(gridSize, gridDivisions, 0x808080, 0x808080);
+      let newZ = gridHelper.position.z - radius/2;
+      gridHelper.position.set(0, 0, newZ);
+
+      gridHelper.rotation.x = Math.PI / 2;
+
+      scene.add(gridHelper);
       stepupscore *= 2;
   }
 }
@@ -120,6 +130,13 @@ function makeFPSGreatAgain(){
     balls = newballs;
     camera.position.z = 9;
     targetCameraZ = 9;
+    scene.remove(gridHelper)
+    gridSize = 1000;
+    gridDivisions = 500;
+    gridHelper = new THREE.GridHelper(gridSize, gridDivisions, 0x808080, 0x808080);
+    gridHelper.position.set(0, 0, -3);
+    gridHelper.rotation.x = Math.PI / 2;
+    scene.add(gridHelper);
 }
 
 function moveallballs(dx, dy, dz) {
