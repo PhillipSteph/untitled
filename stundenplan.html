@@ -18,6 +18,7 @@
       height: 90vh;
     }
     iframe {
+      border: black 1px;
       flex: 1;
       border: none;
     }
@@ -29,12 +30,14 @@
         height: 100vh; /* Ensures both iframes fit */
       }
       iframe {
-        background-color: black;
+        border: 3px solid black; /* Border hinzugefügt */
+        border-radius: 8px; /* Abgerundete Ecken */
+        background-color: white;
         transform: scale(0.40);
         position:absolute;
-        left:-50%;
+        left:-20%;
         top:-40%;
-        width: 200%;
+        width: 140%;
         height: 130vh; /* Forces each iframe to take full viewport height */
       }
     }
