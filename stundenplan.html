@@ -29,9 +29,13 @@
         height: 100vh; /* Ensures both iframes fit */
       }
       iframe {
-        transform: scale(0.5);
-        width: 100%;
-        height: 200vh; /* Forces each iframe to take full viewport height */
+        background-color: black;
+        transform: scale(0.40);
+        position:absolute;
+        left:-50%;
+        top:-40%;
+        width: 200%;
+        height: 130vh; /* Forces each iframe to take full viewport height */
       }
     }
 
@@ -85,8 +89,8 @@
 </head>
 <body>
 <div>
-  <label for="semidSelect">Select Semester:</label>
-  <select id="semidSelect" onchange="saveSemidFromDropdown()">
+  <label style="z-index:2" for="semidSelect">Select Semester:</label>
+  <select style="z-index:2;position:absolute;right:5%;" id="semidSelect" onchange="saveSemidFromDropdown()">
     <option value="0">Choose</option>
     <option value="375">PIA</option>
     <option value="376">PIB</option>
@@ -95,8 +99,8 @@
   </select>
 </div>
 <div class="container">
-  <iframe id="iframe1"></iframe>
-  <iframe id="iframe2"></iframe>
+  <iframe style="z-index:1;" id="iframe1"></iframe>
+  <iframe style="top:5%; z-index: 0;" id="iframe2"></iframe>
 </div>
 </body>
 </html>
