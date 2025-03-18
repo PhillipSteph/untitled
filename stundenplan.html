@@ -147,6 +147,10 @@
       return;
     }
 
+    const nonRedMarkedEvents = [];
+    const redMarkedEventElements = [];
+
+    // Separate the red-marked events and non-red-marked events
     events.forEach(event => {
       const div = document.createElement("div");
       div.className = "event";
@@ -157,13 +161,20 @@
       // Check if the event is red-marked
       if (redMarkedEvents[event["SUMMARY"]]) {
         div.classList.add('red-marked');
+        redMarkedEventElements.push(div);
+      } else {
+        nonRedMarkedEvents.push(div);
       }
 
       // Add click event to toggle red-marked state
       div.addEventListener('click', () => toggleRedMark(event["SUMMARY"], div));
-
-      eventsContainer.appendChild(div);
     });
+
+    // Append non-red-marked events first
+    nonRedMarkedEvents.forEach(eventDiv => eventsContainer.appendChild(eventDiv));
+
+    // Then append red-marked events
+    redMarkedEventElements.forEach(eventDiv => eventsContainer.appendChild(eventDiv));
   }
 
   function toggleRedMark(summary, eventElement) {
