@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mobile iCal Calendar</title>
@@ -8,15 +9,33 @@
     body { font-family: Arial, sans-serif; text-align: center; }
     .container { max-width: 400px; margin: auto; padding: 20px; }
     .nav-buttons { display: flex; justify-content: space-between; margin-bottom: 10px; }
-    .event { border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 5px; }
+    button {
+      width: 100px;
+      height: 100px;
+      font-size: 50px;
+      background-color: #00000000;
+      border-color: #00000000;
+    }
+    button:hover{
+      color: #959595;
+    }
+    .event { border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 5px; background-color: #f6f6f6; }
+    .event strong { display: block; font-size: 1.1em; }
+    .event .location { font-style: italic; font-size: 0.9em; }
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 </head>
 <body>
 <div class="container">
   <div class="nav-buttons">
-    <button onclick="changeDate(-1)">⬅️</button>
+    <button onclick="changeDate(-1)">
+      <i class="fas fa-arrow-left"></i>  <!-- Solid Left Arrow -->
+    </button>
     <h2 id="currentDate"></h2>
-    <button onclick="changeDate(1)">➡️</button>
+    <button onclick="changeDate(1)">
+      <i class="fas fa-arrow-right"></i> <!-- Solid Right Arrow -->
+    </button>
   </div>
   <div id="events"></div>
 </div>
@@ -83,7 +102,9 @@
     events.forEach(event => {
       const div = document.createElement("div");
       div.className = "event";
-      div.innerHTML = `<strong>${event["SUMMARY"]}</strong><br>${parseICSTime(event["DTSTART"]).toLocaleTimeString()} - ${parseICSTime(event["DTEND"]).toLocaleTimeString()}`;
+      div.innerHTML = `<strong>${event["SUMMARY"]}</strong>
+                      <span class="location">${(event["LOCATION"] ? event["LOCATION"].replace(/[,\\]/g, "") : "Unbekannter Ort")}</span>
+                      <br>${parseICSTime(event["DTSTART"]).toLocaleTimeString()} - ${parseICSTime(event["DTEND"]).toLocaleTimeString()}`;
       eventsContainer.appendChild(div);
     });
   }
