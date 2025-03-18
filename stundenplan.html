@@ -3,107 +3,167 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dual Iframe View</title>
+  <title>Mobile iCal Calendar</title>
   <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
+    body { font-family: Arial, sans-serif; text-align: center; }
+    .container { max-width: 400px; margin: auto; padding: 20px; }
+    .nav-buttons { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    button {
+      width: 100px;
+      height: 100px;
+      font-size: 50px;
+      background-color: #00000000;
+      border-color: #00000000;
     }
-    .container {
-      display: flex;
-      width: 100%;
-      height: 90vh;
+    button:hover{
+      color: #959595;
     }
-    iframe {
-      border: black 1px;
-      flex: 1;
-      border: none;
-    }
+    .event { border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 5px; background-color: #f6f6f6; }
+    .event strong { display: block; font-size: 1.1em; }
+    .event .location { font-style: italic; font-size: 0.9em; }
 
-    /* Mobile Styling */
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-        height: 100vh; /* Ensures both iframes fit */
-      }
-      iframe {
-        border: 3px solid black; /* Border hinzugefügt */
-        border-radius: 8px; /* Abgerundete Ecken */
-        background-color: white;
-        transform: scale(0.50);
-        position:absolute;
-        left:-30%;
-        top:-30%;
-        width: 160%;
-        height: 130vh; /* Forces each iframe to take full viewport height */
-      }
+    /* Styling for the calendar selection buttons */
+    .calendar-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
     }
-
+    .calendar-buttons button {
+      background-color: #f6f6f6;
+      border: 2px solid #ccc;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .calendar-buttons button.selected {
+      background-color: #ddd;
+      border-color: #888;
+    }
   </style>
-  <script>
-    function updateIframes(semid = null) {
-      const currentTime = Math.floor(Date.now() / 1000);
-      const oneWeekLater = currentTime + 7 * 24 * 60 * 60; // Add 7 days in seconds
-
-      if (!semid) {
-        semid = localStorage.getItem("semid") || "375";
-      }
-      const url1 = `https://gera.dhge.de/Stundenplan/planung/plan.php?datum=${currentTime}&semid=${semid}`;
-      const url2 = `https://gera.dhge.de/Stundenplan/planung/plan.php?datum=${oneWeekLater}&semid=${semid}`;
-
-      document.getElementById("iframe1").src = url1;
-      document.getElementById("iframe2").src = url2;
-    }
-
-    function extractSemidFromUrl(url) {
-      try {
-        const urlObj = new URL(url);
-        return urlObj.searchParams.get("semid");
-      } catch (error) {
-        return null;
-      }
-    }
-
-    function monitorIframeChanges(iframe) {
-      iframe.addEventListener("load", () => {
-        const semid = extractSemidFromUrl(iframe.src);
-        if (semid && semid !== localStorage.getItem("semid")) {
-          localStorage.setItem("semid", semid);
-          updateIframes(semid);
-        }
-      });
-    }
-
-    function saveSemidFromDropdown() {
-      const semid = document.getElementById("semidSelect").value;
-      localStorage.setItem("semid", semid);
-      updateIframes(semid);
-    }
-
-    window.onload = () => {
-      updateIframes();
-      monitorIframeChanges(document.getElementById("iframe1"));
-      monitorIframeChanges(document.getElementById("iframe2"));
-    };
-  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-<div>
-  <label style="z-index:2" for="semidSelect">Select Semester:</label>
-  <select style="z-index:2;position:absolute;right:5%;" id="semidSelect" onchange="saveSemidFromDropdown()">
-    <option value="0">Choose</option>
-    <option value="375">PIA</option>
-    <option value="376">PIB</option>
-    <option value="379">PIC</option>
-    <option value="378">WI</option>
-  </select>
-</div>
 <div class="container">
-  <iframe style="z-index:1;" id="iframe1"></iframe>
-  <iframe style="top:30%; z-index: 0;" id="iframe2"></iframe>
+  <!-- Calendar Selection Buttons -->
+  <div class="calendar-buttons">
+    <button id="PIA23" onclick="selectCalendar('PIA23')">PIA23</button>
+    <button id="PIB23" onclick="selectCalendar('PIB23')">PIB23</button>
+    <button id="PIC23" onclick="selectCalendar('PIC23')">PIC23</button>
+    <button id="WI23" onclick="selectCalendar('WI23')">WI23</button>
+  </div>
+
+  <!-- Navigation Buttons and Date -->
+  <div class="nav-buttons">
+    <button onclick="changeDate(-1)">
+      <i class="fas fa-arrow-left"></i>  <!-- Solid Left Arrow -->
+    </button>
+    <h2 id="currentDate"></h2>
+    <button onclick="changeDate(1)">
+      <i class="fas fa-arrow-right"></i> <!-- Solid Right Arrow -->
+    </button>
+  </div>
+
+  <div id="events"></div>
 </div>
+
+<script>
+  let currentDate = new Date();
+  let currentCalendar = localStorage.getItem('selectedCalendar') || 'PIA23'; // Default to PIA23 if nothing is stored
+  const ICS_FILES = {
+    'PIA23': 'calendar.ics',
+    'PIB23': 'calendarB.ics',
+    'PIC23': 'calendarC.ics',
+    'WI23': 'calendarW.ics'
+  };
+
+  function formatDate(date) {
+    return date.toISOString().split("T")[0];
+  }
+
+  function changeDate(days) {
+    currentDate.setDate(currentDate.getDate() + days);
+    displayDate();
+    fetchEvents();
+  }
+
+  function displayDate() {
+    document.getElementById("currentDate").innerText = formatDate(currentDate);
+  }
+
+  async function fetchEvents() {
+    const response = await fetch(ICS_FILES[currentCalendar]);
+    const text = await response.text();
+    parseICS(text);
+  }
+
+  function parseICS(data) {
+    const events = [];
+    const lines = data.split("\n");
+    let event = {};
+
+    lines.forEach(line => {
+      if (line.startsWith("BEGIN:VEVENT")) {
+        event = {};
+      } else if (line.startsWith("END:VEVENT")) {
+        events.push(event);
+      } else {
+        const [key, value] = line.split(/:(.+)/);
+        if (key && value) event[key.trim()] = value.trim();
+      }
+    });
+
+    const filteredEvents = events.filter(e => e["DTSTART"] && formatDate(parseICSTime(e["DTSTART"])) === formatDate(currentDate));
+    displayEvents(filteredEvents);
+  }
+
+  function parseICSTime(icsTime) {
+    const match = icsTime.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z?/);
+    if (!match) return new Date();
+    return new Date(Date.UTC(match[1], match[2] - 1, match[3], match[4], match[5], match[6]));
+  }
+
+  function displayEvents(events) {
+    const eventsContainer = document.getElementById("events");
+    eventsContainer.innerHTML = "";
+
+    if (events.length === 0) {
+      eventsContainer.innerHTML = "<p>Keine Termine für diesen Tag.</p>";
+      return;
+    }
+
+    events.forEach(event => {
+      const div = document.createElement("div");
+      div.className = "event";
+      div.innerHTML = `<strong>${event["SUMMARY"]}</strong>
+                      <span class="location">${(event["LOCATION"] ? event["LOCATION"].replace(/[,\\]/g, "") : "Unbekannter Ort")}</span>
+                      <br>${parseICSTime(event["DTSTART"]).toLocaleTimeString()} - ${parseICSTime(event["DTEND"]).toLocaleTimeString()}`;
+      eventsContainer.appendChild(div);
+    });
+  }
+
+  function selectCalendar(calendar) {
+    // Update the current calendar and highlight the selected button
+    currentCalendar = calendar;
+    localStorage.setItem('selectedCalendar', calendar); // Save the selection to localStorage
+
+    // Remove 'selected' class from all buttons
+    document.querySelectorAll('.calendar-buttons button').forEach(button => {
+      button.classList.remove('selected');
+    });
+
+    // Add 'selected' class to the clicked button
+    document.getElementById(calendar).classList.add('selected');
+
+    // Fetch events for the selected calendar
+    fetchEvents();
+  }
+
+  // Initial setup
+  document.getElementById(currentCalendar).classList.add('selected'); // Highlight the saved calendar
+  displayDate();
+  fetchEvents();
+</script>
 </body>
 </html>
