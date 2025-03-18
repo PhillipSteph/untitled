@@ -23,7 +23,7 @@
     button:hover{
       color: #959595;
     }
-    .event { border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 5px; background-color: #f6f6f6; }
+    .event { border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 5px; background-color: #f6f6f6; cursor: pointer; }
     .event strong { display: block; font-size: 1.1em; }
     .event .location { font-style: italic; font-size: 0.9em; }
 
@@ -45,6 +45,12 @@
     .calendar-buttons button.selected {
       background-color: #ddd;
       border-color: #888;
+    }
+
+    /* Red marked events */
+    .red-marked {
+      color: #491313;
+      background-color: #BBBBBB;
     }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -82,6 +88,9 @@
     'PIC23': 'calendarC.ics',
     'WI23': 'calendarW.ics'
   };
+
+  // Get the red-marked events from localStorage
+  let redMarkedEvents = JSON.parse(localStorage.getItem('redMarkedEvents')) || {};
 
   function formatDate(date) {
     return date.toISOString().split("T")[0];
@@ -144,8 +153,31 @@
       div.innerHTML = `<strong>${event["SUMMARY"]}</strong>
                       <span class="location">${(event["LOCATION"] ? event["LOCATION"].replace(/[,\\]/g, "") : "Unbekannter Ort")}</span>
                       <br>${parseICSTime(event["DTSTART"]).toLocaleTimeString()} - ${parseICSTime(event["DTEND"]).toLocaleTimeString()}`;
+
+      // Check if the event is red-marked
+      if (redMarkedEvents[event["SUMMARY"]]) {
+        div.classList.add('red-marked');
+      }
+
+      // Add click event to toggle red-marked state
+      div.addEventListener('click', () => toggleRedMark(event["SUMMARY"], div));
+
       eventsContainer.appendChild(div);
     });
+  }
+
+  function toggleRedMark(summary, eventElement) {
+    // Toggle red mark in the redMarkedEvents object
+    if (redMarkedEvents[summary]) {
+      delete redMarkedEvents[summary];
+      eventElement.classList.remove('red-marked');
+    } else {
+      redMarkedEvents[summary] = "#FF0000"; // Mark with red color
+      eventElement.classList.add('red-marked');
+    }
+
+    // Save the updated redMarkedEvents to localStorage
+    localStorage.setItem('redMarkedEvents', JSON.stringify(redMarkedEvents));
   }
 
   function selectCalendar(calendar) {
