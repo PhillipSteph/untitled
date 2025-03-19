@@ -12,61 +12,51 @@
       touch-action: manipulation;
       width: 100px;
       height: 100px;
-      font-size: 40px; /* Adjust font size to fit better */
-      background-color: #00000000;
-      border-color: #00000000;
+      font-size: 40px;
+      background-color: transparent;
+      border: none;
       display: flex;
       justify-content: center;
-      align-items: center; /* Center the icon */
-      text-align: center; /* Center the text */
+      align-items: center;
+      text-align: center;
     }
-    button:hover{
-      color: #959595;
-    }
+    button:hover { color: #959595; }
     .event {
       overflow: hidden;
       font-size:18px;
       border: 1px solid #ccc;
       height: fit-content;
       line-height: 25px;
-      padding: 10px 0 10px 10px;
+      padding: 10px;
       margin: 5px 0;
       border-radius: 8px;
       background-color: #f6f6f6;
       cursor: pointer;
     }
-    .event strong { display: block; font-size: calc(4.5vw); font-weight: 200;}
+    .event strong { display: block; font-size: calc(4.5vw); font-weight: 200; }
     .event .location { font-style: italic; font-size: 0.9em; }
-    .time{
+    .time {
       padding-right: 20px;
       width: 15%;
-      float:left;
+      float: left;
       font-size: 20px;
       line-height: 35px;
       text-align: left;
       margin-top: 3px;
       margin-left: 15px;
     }
-    /* Styling for the calendar selection buttons */
-    .calendar-buttons {
-      display: flex;
-      justify-content: space-around;
+    /* Dropdown Styling */
+    .course-selection {
       margin-bottom: 20px;
     }
-    .calendar-buttons button {
-      background-color: #f6f6f6;
-      border: 2px solid #ccc;
-      padding: 10px;
+    select {
       font-size: 16px;
+      padding: 10px;
       border-radius: 5px;
+      border: 2px solid #ccc;
       cursor: pointer;
-      transition: all 0.3s ease;
+      background-color: #f6f6f6;
     }
-    .calendar-buttons button.selected {
-      background-color: #ddd;
-      border-color: #888;
-    }
-
     /* Red marked events */
     .red-marked {
       color: #491313;
@@ -77,22 +67,24 @@
 </head>
 <body>
 <div class="container">
-  <!-- Calendar Selection Buttons -->
-  <div class="calendar-buttons">
-    <button id="PIA23" onclick="selectCalendar('PIA23')">PIA23</button>
-    <button id="PIB23" onclick="selectCalendar('PIB23')">PIB23</button>
-    <button id="PIC23" onclick="selectCalendar('PIC23')">PIC23</button>
-    <button id="WI23" onclick="selectCalendar('WI23')">WI23</button>
+  <!-- Course Selection Dropdown -->
+  <div class="course-selection">
+    <select id="course-select" onchange="selectCalendar(this.value)">
+      <option value="PIA23">PIA23</option>
+      <option value="PIB23">PIB23</option>
+      <option value="PIC23">PIC23</option>
+      <option value="WI23">WI23</option>
+    </select>
   </div>
 
   <!-- Navigation Buttons and Date -->
   <div class="nav-buttons">
     <button onclick="changeDate(-1)">
-      <i class="fas fa-arrow-left"></i>  <!-- Solid Left Arrow -->
+      <i class="fas fa-arrow-left"></i>
     </button>
     <h2 id="currentDate"></h2>
     <button onclick="changeDate(1)">
-      <i class="fas fa-arrow-right"></i> <!-- Solid Right Arrow -->
+      <i class="fas fa-arrow-right"></i>
     </button>
   </div>
 
@@ -101,7 +93,7 @@
 
 <script>
   let currentDate = new Date();
-  let currentCalendar = localStorage.getItem('selectedCalendar') || 'PIA23'; // Default to PIA23 if nothing is stored
+  let currentCalendar = localStorage.getItem('selectedCalendar') || 'PIA23'; // Default to PIA23
   const ICS_FILES = {
     'PIA23': 'calendar.ics',
     'PIB23': 'calendarB.ics',
@@ -111,9 +103,8 @@
   let months = [
     "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September",
     "Oktober","November","Dezember"
-  ]
+  ];
 
-  // Get the red-marked events from localStorage
   let redMarkedEvents = JSON.parse(localStorage.getItem('redMarkedEvents')) || {};
 
   function formatDate(date) {
@@ -121,10 +112,27 @@
   }
 
   function changeDate(days) {
-    currentDate.setDate(currentDate.getDate() + days);
+    do {
+      currentDate.setDate(currentDate.getDate() + days);
+    } while (currentDate.getDay() === 6 || currentDate.getDay() === 0); // 6 = Saturday, 0 = Sunday
+
     displayDate();
     fetchEvents();
   }
+  function toggleRedMark(eventName, element) {
+    if (redMarkedEvents[eventName]) {
+      delete redMarkedEvents[eventName];
+      element.classList.remove('red-marked');
+    } else {
+      redMarkedEvents[eventName] = true;
+      element.classList.add('red-marked');
+    }
+    localStorage.setItem('redMarkedEvents', JSON.stringify(redMarkedEvents));
+
+    // Refresh the event list to apply sorting again
+    fetchEvents();
+  }
+
 
   function displayDate() {
     document.getElementById("currentDate").innerText = getGermanDateLayout(formatDate(currentDate));
@@ -135,10 +143,15 @@
     const text = await response.text();
     parseICS(text);
   }
-  function getGermanDateLayout(date){
+
+  function getGermanDateLayout(date) {
     let newdate = date.split("-");
-    return newdate[2]+". "+months[parseInt(newdate[1]) - 1];
+    let day = new Date(date).getDay();
+    let weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+    return weekdays[day] + "\n" + newdate[2] + ". " + months[parseInt(newdate[1]) - 1];
   }
+
+
   function parseICS(data) {
     const events = [];
     const lines = data.split("\n");
@@ -177,26 +190,22 @@
     const nonRedMarkedEvents = [];
     const redMarkedEventElements = [];
 
-    // Separate the red-marked events and non-red-marked events
     events.forEach(event => {
       let startingtime =  parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
       let endtime =       parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
-
       let datelocation =  (event["LOCATION"] ? event["LOCATION"].split("\\")[0] : "Unbekannter Ort");
       let prof =          (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
       let heading = event["SUMMARY"].replace(/"/g,"");
 
-      if(heading.length > 22) heading = heading.slice(0,21);
-      if(startingtime.length === 7) startingtime = "0" + startingtime;
-      if(endtime.length === 7) endtime = "0" + endtime;
+      if (heading.length > 22) heading = heading.slice(0,21);
+      if (startingtime.length === 7) startingtime = "0" + startingtime;
+      if (endtime.length === 7) endtime = "0" + endtime;
 
       const div = document.createElement("div");
       div.className = "event";
-      div.innerHTML = `
-                    <div class="time">${startingtime}<br>${endtime}</div>
-                    <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
+      div.innerHTML = `<div class="time">${startingtime}<br>${endtime}</div>
+                      <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
 
-      // Check if the event is red-marked
       if (redMarkedEvents[event["SUMMARY"]]) {
         div.classList.add('red-marked');
         redMarkedEventElements.push(div);
@@ -204,50 +213,20 @@
         nonRedMarkedEvents.push(div);
       }
 
-      // Add click event to toggle red-marked state
       div.addEventListener('click', () => toggleRedMark(event["SUMMARY"], div));
     });
 
-    // Append non-red-marked events first
     nonRedMarkedEvents.forEach(eventDiv => eventsContainer.appendChild(eventDiv));
-
-    // Then append red-marked events
     redMarkedEventElements.forEach(eventDiv => eventsContainer.appendChild(eventDiv));
   }
 
-  function toggleRedMark(summary, eventElement) {
-    // Toggle red mark in the redMarkedEvents object
-    if (redMarkedEvents[summary]) {
-      delete redMarkedEvents[summary];
-      eventElement.classList.remove('red-marked');
-    } else {
-      redMarkedEvents[summary] = "#FF0000"; // Mark with red color
-      eventElement.classList.add('red-marked');
-    }
-
-    // Save the updated redMarkedEvents to localStorage
-    localStorage.setItem('redMarkedEvents', JSON.stringify(redMarkedEvents));
-  }
-
   function selectCalendar(calendar) {
-    // Update the current calendar and highlight the selected button
     currentCalendar = calendar;
-    localStorage.setItem('selectedCalendar', calendar); // Save the selection to localStorage
-
-    // Remove 'selected' class from all buttons
-    document.querySelectorAll('.calendar-buttons button').forEach(button => {
-      button.classList.remove('selected');
-    });
-
-    // Add 'selected' class to the clicked button
-    document.getElementById(calendar).classList.add('selected');
-
-    // Fetch events for the selected calendar
+    localStorage.setItem('selectedCalendar', calendar);
     fetchEvents();
   }
 
-  // Initial setup
-  document.getElementById(currentCalendar).classList.add('selected'); // Highlight the saved calendar
+  document.getElementById("course-select").value = currentCalendar;
   displayDate();
   fetchEvents();
 </script>
