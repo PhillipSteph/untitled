@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>DHGE Kalender von Phlib</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; }
+    body { font-family: Arial, sans-serif; text-align: center; max-width: 100%; overflow-x: hidden;}
     .container { max-width: 400px; margin: auto; padding: 20px; }
     .nav-buttons { display: flex; justify-content: space-between; margin-bottom: 10px; }
     button {
@@ -23,10 +23,32 @@
     button:hover{
       color: #959595;
     }
-    .event { border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 5px; background-color: #f6f6f6; cursor: pointer; }
-    .event strong { display: block; font-size: 1.1em; }
+    .event {
+      overflow: hidden;
+      font-size:18px;
+      border: 1px solid #ccc;
+      height: fit-content;
+      line-height: 25px;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      background-color: #f6f6f6;
+      cursor: pointer;
+    }
+    .event strong { display: block; font-size: 1.2em; font-weight: 200;}
     .event .location { font-style: italic; font-size: 0.9em; }
-
+    .time{
+      width: 15%;
+      float:left;
+      font-size: 20px;
+      line-height: 35px;
+      text-align: left;
+      margin-top: 3px;
+      margin-left: 15px;
+    }
+    .location{
+      float: right;
+    }
     /* Styling for the calendar selection buttons */
     .calendar-buttons {
       display: flex;
@@ -88,6 +110,10 @@
     'PIC23': 'calendarC.ics',
     'WI23': 'calendarW.ics'
   };
+  let months = [
+    "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September",
+    "Oktober","November","Dezember"
+  ]
 
   // Get the red-marked events from localStorage
   let redMarkedEvents = JSON.parse(localStorage.getItem('redMarkedEvents')) || {};
@@ -103,7 +129,7 @@
   }
 
   function displayDate() {
-    document.getElementById("currentDate").innerText = formatDate(currentDate);
+    document.getElementById("currentDate").innerText = getGermanDateLayout(formatDate(currentDate));
   }
 
   async function fetchEvents() {
@@ -111,7 +137,10 @@
     const text = await response.text();
     parseICS(text);
   }
-
+  function getGermanDateLayout(date){
+    let newdate = date.split("-");
+    return newdate[2]+". "+months[parseInt(newdate[1]) - 1];
+  }
   function parseICS(data) {
     const events = [];
     const lines = data.split("\n");
@@ -152,11 +181,22 @@
 
     // Separate the red-marked events and non-red-marked events
     events.forEach(event => {
+      let startingtime =  parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
+      let endtime =       parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
+
+      let datelocation =  (event["LOCATION"] ? event["LOCATION"].split("\\")[0] : "Unbekannter Ort");
+      let prof =          (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
+      let heading = event["SUMMARY"].replace(/"/g,"");
+
+      if(heading.length > 22) heading = heading.slice(0,21);
+      if(startingtime.length === 7) startingtime = "0" + startingtime;
+      if(endtime.length === 7) endtime = "0" + endtime;
+
       const div = document.createElement("div");
       div.className = "event";
-      div.innerHTML = `<strong>${event["SUMMARY"]}</strong>
-                      <span class="location">${(event["LOCATION"] ? event["LOCATION"].replace(/[,\\]/g, "") : "Unbekannter Ort")}</span>
-                      <br>${parseICSTime(event["DTSTART"]).toLocaleTimeString()} - ${parseICSTime(event["DTEND"]).toLocaleTimeString()}`;
+      div.innerHTML = `
+                    <div class="time">${startingtime}<br>${endtime}</div>
+                    <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
 
       // Check if the event is red-marked
       if (redMarkedEvents[event["SUMMARY"]]) {
