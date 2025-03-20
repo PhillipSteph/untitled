@@ -248,102 +248,89 @@
       groupedEvents[className].push(event);
     });
 
-// Now process each class group separately
-    let sortedEvents = [];
+    events.forEach((event, i) => {
+      let startingtime = parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
+      let endtime = parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
+      let datelocation = (event["LOCATION"] ? event["LOCATION"].split("\\")[0] : "Unbekannter Ort");
+      let prof = (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
+      let heading = event["SUMMARY"].replace(/"/g, "");
 
-    for (let className in groupedEvents) {
-      let classEvents = groupedEvents[className];
-
-      // Check for overlapping events, and sort by time if needed
-      let overlappingEvents = [];
-      let nonOverlappingEvents = [];
-
-      for (let i = 0; i < classEvents.length; i++) {
-        let event = classEvents[i];
-        let startTime = parseICSTime(event["DTSTART"]);
-
-        // If there is any event before the current one that overlaps, we consider this an overlap
-        let isOverlapping = false;
-        for (let j = 0; j < i; j++) {
-          let previousEvent = classEvents[j];
-          let previousEndTime = parseICSTime(previousEvent["DTEND"]);
-
-          if (previousEndTime > startTime) {
-            isOverlapping = true;
-            break;
-          }
-        }
-
-        if (isOverlapping) {
-          overlappingEvents.push(event);  // Add overlapping event to the list
-        } else {
-          nonOverlappingEvents.push(event);  // Add non-overlapping event to the list
-        }
-      }
-
-      // Sort overlapping events by start time
-      overlappingEvents.sort((a, b) => parseICSTime(a["DTSTART"]) - parseICSTime(b["DTSTART"]));
-
-      // Add the sorted overlapping events and non-overlapping events to the final list
-      sortedEvents = [...sortedEvents, ...nonOverlappingEvents, ...overlappingEvents];
-    }
-
-    for (let i = 0; i < events.length; i++) {
-      let event = events[i];
-      let startingtime =  parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
-      let endtime =       parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
-      let datelocation =  (event["LOCATION"] ? event["LOCATION"].split("\\")[0] : "Unbekannter Ort");
-      let prof =          (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
-      let heading = event["SUMMARY"].replace(/"/g,"");
-
-
-
-      if (heading.length > 19) heading = heading.slice(0,18);
+      if (heading.length > 19) heading = heading.slice(0, 18);
       if (startingtime.length === 7) startingtime = "0" + startingtime;
       if (endtime.length === 7) endtime = "0" + endtime;
 
       const div = document.createElement("div");
       div.className = "event";
       div.innerHTML = `<div class="time">${startingtime}<br>${endtime}</div>
-                      <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
-      if (i > 0 && i < events.length - 1 &&
-        event["LOCATION"] === events[i - 1]["LOCATION"] &&
-        event["SUMMARY"] === events[i - 1]["SUMMARY"] &&
-        event["LOCATION"] === events[i + 1]["LOCATION"] &&
-        event["SUMMARY"] === events[i + 1]["SUMMARY"]) {
+                          <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
+
+      if (redMarkedEvents[event["SUMMARY"]]) {
+        div.classList.add('red-marked');
+        redMarkedEventElements.push({ div, event, index: i });
+      } else {
+        nonRedMarkedEvents.push({ div, event, index: i });
+      }
+
+      div.addEventListener('click', () => toggleRedMark(event["SUMMARY"], div));
+    });
+
+    // Apply styling based on neighbors for non-red-marked events
+    nonRedMarkedEvents.forEach(({ div, event, index }, i) => {
+      const prevEvent = i > 0 ? nonRedMarkedEvents[i - 1].event : null;
+      const nextEvent = i < nonRedMarkedEvents.length - 1 ? nonRedMarkedEvents[i + 1].event : null;
+
+      if (prevEvent && nextEvent &&
+        event["LOCATION"] === prevEvent["LOCATION"] &&
+        event["SUMMARY"] === prevEvent["SUMMARY"] &&
+        event["LOCATION"] === nextEvent["LOCATION"] &&
+        event["SUMMARY"] === nextEvent["SUMMARY"]) {
         // Only left and right borders remain, and no round corners
-        div.style.borderRadius = "0";  // No rounding on corners
+        div.style.borderRadius = "0";
         div.style.borderLeft = "1px solid #608c61";
         div.style.borderRight = "1px solid #608c61";
         div.style.borderTop = "none";
         div.style.borderBottom = "none";
         div.style.marginTop = "0";
-// Check if the previous event has the same LOCATION and SUMMARY
-      } else if (i > 0 && event["LOCATION"] === events[i - 1]["LOCATION"] && event["SUMMARY"] === events[i - 1]["SUMMARY"]) {
+      } else if (prevEvent && event["LOCATION"] === prevEvent["LOCATION"] && event["SUMMARY"] === prevEvent["SUMMARY"]) {
         div.style.marginTop = "0";
-        // Top corners not round and no top border
-        div.style.borderRadius = "0 0 8px 8px";  // Only the bottom corners are rounded
-        div.style.borderTop = "none";  // Remove the top border
-
-// Check if the next event has the same LOCATION and SUMMARY
-      } else if (i < events.length - 1 && event["LOCATION"] === events[i + 1]["LOCATION"] && event["SUMMARY"] === events[i + 1]["SUMMARY"]) {
-
-        // Bottom corners not round and no bottom border
-        div.style.borderRadius = "8px 8px 0 0";  // Only the top corners are rounded
-        div.style.borderBottom = "none";  // Remove the bottom border
+        div.style.borderRadius = "0 0 8px 8px";
+        div.style.borderTop = "none";
+      } else if (nextEvent && event["LOCATION"] === nextEvent["LOCATION"] && event["SUMMARY"] === nextEvent["SUMMARY"]) {
+        div.style.borderRadius = "8px 8px 0 0";
+        div.style.borderBottom = "none";
       }
-      if (redMarkedEvents[event["SUMMARY"]]) {
-        div.classList.add('red-marked');
-        redMarkedEventElements.push(div);
-      } else {
-        nonRedMarkedEvents.push(div);
+    });
+
+    // Apply styling based on neighbors for red-marked events
+    redMarkedEventElements.forEach(({ div, event, index }, i) => {
+      const prevEvent = i > 0 ? redMarkedEventElements[i - 1].event : null;
+      const nextEvent = i < redMarkedEventElements.length - 1 ? redMarkedEventElements[i + 1].event : null;
+
+      if (prevEvent && nextEvent &&
+        event["LOCATION"] === prevEvent["LOCATION"] &&
+        event["SUMMARY"] === prevEvent["SUMMARY"] &&
+        event["LOCATION"] === nextEvent["LOCATION"] &&
+        event["SUMMARY"] === nextEvent["SUMMARY"]) {
+        // Only left and right borders remain, and no round corners
+        div.style.borderRadius = "0";
+        div.style.borderLeft = "1px solid #ff0000"; // Red color for red-marked events
+        div.style.borderRight = "1px solid #ff0000";
+        div.style.borderTop = "none";
+        div.style.borderBottom = "none";
+        div.style.marginTop = "0";
+      } else if (prevEvent && event["LOCATION"] === prevEvent["LOCATION"] && event["SUMMARY"] === prevEvent["SUMMARY"]) {
+        div.style.marginTop = "0";
+        div.style.borderRadius = "0 0 8px 8px";
+        div.style.borderTop = "none";
+      } else if (nextEvent && event["LOCATION"] === nextEvent["LOCATION"] && event["SUMMARY"] === nextEvent["SUMMARY"]) {
+        div.style.borderRadius = "8px 8px 0 0";
+        div.style.borderBottom = "none";
       }
+    });
 
-      div.addEventListener('click', () => toggleRedMark(event["SUMMARY"], div));
-    }
-
-    nonRedMarkedEvents.forEach(eventDiv => eventsContainer.appendChild(eventDiv));
-    redMarkedEventElements.forEach(eventDiv => eventsContainer.appendChild(eventDiv));
+    // Append non-red-marked events first, then red-marked events
+    nonRedMarkedEvents.forEach(({ div }) => eventsContainer.appendChild(div));
+    redMarkedEventElements.forEach(({ div }) => eventsContainer.appendChild(div));
   }
 
   function selectCalendar(calendar) {
