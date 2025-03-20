@@ -29,20 +29,20 @@
 
     #left, #right {
       width: 25%;
-      position: static; /* Remove absolute positioning */
+      position: absolute; /* Remove absolute positioning */
       flex: 0 0 100px; /* Keep buttons at a fixed width */
     }
-
+    #left{
+      left: 0;
+    }
+    #right{
+      right: 0;
+    }
     #currentDate {
       letter-spacing: calc(0.5vw);
       color: #230903;
-      width: 50%;
-      position: static; /* Remove absolute positioning */
-      transform: none; /* Remove transform */
-      flex-grow: 1;
-      text-align: center;
-      font-size: 24px; /* Adjust size if necessary */
       white-space: nowrap;
+      font-size: 24px; /* Adjust size if necessary */
     }
     button {
       touch-action: manipulation;
