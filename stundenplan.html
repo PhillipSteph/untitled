@@ -16,7 +16,7 @@
     .container {
       width: 90%; /* Any width */
       margin: 0 auto;
-      padding: 20px;
+      padding: 0 20px 20px;
     }
     .nav-buttons {
       width: 100%;
@@ -89,7 +89,7 @@
     }
     /* Dropdown Styling */
     .course-selection {
-      margin-bottom: calc(3vh);
+      margin-bottom: calc(1vh);
     }
     select {
       font-size: 16px;
@@ -239,19 +239,54 @@
 
     const nonRedMarkedEvents = [];
     const redMarkedEventElements = [];
+    let groupedEvents = {};
+    events.forEach(event => {
+      const className = event["SUMMARY"];
+      if (!groupedEvents[className]) {
+        groupedEvents[className] = [];
+      }
+      groupedEvents[className].push(event);
+    });
 
-    events.sort((a, b) => {
-      // Compare by class (SUMMARY)
-      const summaryComparison = a["SUMMARY"].localeCompare(b["SUMMARY"]);
-      if (summaryComparison !== 0) {
-        return summaryComparison;  // If they have different classes, return the comparison result
+// Now process each class group separately
+    let sortedEvents = [];
+
+    for (let className in groupedEvents) {
+      let classEvents = groupedEvents[className];
+
+      // Check for overlapping events, and sort by time if needed
+      let overlappingEvents = [];
+      let nonOverlappingEvents = [];
+
+      for (let i = 0; i < classEvents.length; i++) {
+        let event = classEvents[i];
+        let startTime = parseICSTime(event["DTSTART"]);
+
+        // If there is any event before the current one that overlaps, we consider this an overlap
+        let isOverlapping = false;
+        for (let j = 0; j < i; j++) {
+          let previousEvent = classEvents[j];
+          let previousEndTime = parseICSTime(previousEvent["DTEND"]);
+
+          if (previousEndTime > startTime) {
+            isOverlapping = true;
+            break;
+          }
+        }
+
+        if (isOverlapping) {
+          overlappingEvents.push(event);  // Add overlapping event to the list
+        } else {
+          nonOverlappingEvents.push(event);  // Add non-overlapping event to the list
+        }
       }
 
-      // If they have the same class, compare by start time (DTSTART)
-      const startTimeA = parseICSTime(a["DTSTART"]);
-      const startTimeB = parseICSTime(b["DTSTART"]);
-      return startTimeA - startTimeB;  // Compare by start time (in milliseconds)
-    });
+      // Sort overlapping events by start time
+      overlappingEvents.sort((a, b) => parseICSTime(a["DTSTART"]) - parseICSTime(b["DTSTART"]));
+
+      // Add the sorted overlapping events and non-overlapping events to the final list
+      sortedEvents = [...sortedEvents, ...nonOverlappingEvents, ...overlappingEvents];
+    }
 
     for (let i = 0; i < events.length; i++) {
       let event = events[i];
