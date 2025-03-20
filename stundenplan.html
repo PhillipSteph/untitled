@@ -67,10 +67,10 @@
       font-size:18px;
       border: 1px solid #608c61;
       color: #230903;
-      height: fit-content;
+      height: 77px;/*184 for double, 294 for tripple*/
       line-height: 25px;
       padding: 10px;
-      margin: 10px 0;
+      margin-top: 10px;
       border-radius: 8px;
       background-color: #B7CCB8;
       cursor: pointer;
@@ -240,12 +240,28 @@
     const nonRedMarkedEvents = [];
     const redMarkedEventElements = [];
 
-    events.forEach(event => {
+    events.sort((a, b) => {
+      // Compare by class (SUMMARY)
+      const summaryComparison = a["SUMMARY"].localeCompare(b["SUMMARY"]);
+      if (summaryComparison !== 0) {
+        return summaryComparison;  // If they have different classes, return the comparison result
+      }
+
+      // If they have the same class, compare by start time (DTSTART)
+      const startTimeA = parseICSTime(a["DTSTART"]);
+      const startTimeB = parseICSTime(b["DTSTART"]);
+      return startTimeA - startTimeB;  // Compare by start time (in milliseconds)
+    });
+
+    for (let i = 0; i < events.length; i++) {
+      let event = events[i];
       let startingtime =  parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
       let endtime =       parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
       let datelocation =  (event["LOCATION"] ? event["LOCATION"].split("\\")[0] : "Unbekannter Ort");
       let prof =          (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
       let heading = event["SUMMARY"].replace(/"/g,"");
+
+
 
       if (heading.length > 19) heading = heading.slice(0,18);
       if (startingtime.length === 7) startingtime = "0" + startingtime;
@@ -255,7 +271,32 @@
       div.className = "event";
       div.innerHTML = `<div class="time">${startingtime}<br>${endtime}</div>
                       <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
+      if (i > 0 && i < events.length - 1 &&
+        event["LOCATION"] === events[i - 1]["LOCATION"] &&
+        event["SUMMARY"] === events[i - 1]["SUMMARY"] &&
+        event["LOCATION"] === events[i + 1]["LOCATION"] &&
+        event["SUMMARY"] === events[i + 1]["SUMMARY"]) {
+        // Only left and right borders remain, and no round corners
+        div.style.borderRadius = "0";  // No rounding on corners
+        div.style.borderLeft = "1px solid #608c61";
+        div.style.borderRight = "1px solid #608c61";
+        div.style.borderTop = "none";
+        div.style.borderBottom = "none";
+        div.style.marginTop = "0";
+// Check if the previous event has the same LOCATION and SUMMARY
+      } else if (i > 0 && event["LOCATION"] === events[i - 1]["LOCATION"] && event["SUMMARY"] === events[i - 1]["SUMMARY"]) {
+        div.style.marginTop = "0";
+        // Top corners not round and no top border
+        div.style.borderRadius = "0 0 8px 8px";  // Only the bottom corners are rounded
+        div.style.borderTop = "none";  // Remove the top border
 
+// Check if the next event has the same LOCATION and SUMMARY
+      } else if (i < events.length - 1 && event["LOCATION"] === events[i + 1]["LOCATION"] && event["SUMMARY"] === events[i + 1]["SUMMARY"]) {
+
+        // Bottom corners not round and no bottom border
+        div.style.borderRadius = "8px 8px 0 0";  // Only the top corners are rounded
+        div.style.borderBottom = "none";  // Remove the bottom border
+      }
       if (redMarkedEvents[event["SUMMARY"]]) {
         div.classList.add('red-marked');
         redMarkedEventElements.push(div);
@@ -264,7 +305,7 @@
       }
 
       div.addEventListener('click', () => toggleRedMark(event["SUMMARY"], div));
-    });
+    }
 
     nonRedMarkedEvents.forEach(eventDiv => eventsContainer.appendChild(eventDiv));
     redMarkedEventElements.forEach(eventDiv => eventsContainer.appendChild(eventDiv));
