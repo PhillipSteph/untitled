@@ -12,16 +12,23 @@
       padding: 20px;
     }
     .nav-buttons {
-      position: relative;
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 20px;
     }
-    #left {
-      left: 0;
+
+    #left, #right {
+      position: static; /* Remove absolute positioning */
+      flex: 0 0 100px; /* Keep buttons at a fixed width */
     }
-    #right {
-      right: 0;
+
+    #currentDate {
+      position: static; /* Remove absolute positioning */
+      transform: none; /* Remove transform */
+      flex-grow: 1; /* Allow the date to take up remaining space */
+      text-align: center;
     }
     button {
       touch-action: manipulation;
@@ -36,6 +43,10 @@
       text-align: center;
     }
     button:hover { color: #959595; }
+    #events {
+      height: fit-content;
+      width: 100%;
+    }
     .event {
       overflow: hidden;
       font-size:18px;
