@@ -41,15 +41,28 @@
 
     /* Dropdown Styling */
     .buttonsOnTop {
+      display: flex; /* Use flexbox to align items horizontally */
+      justify-content: space-between; /* Space out the items */
+      align-items: center; /* Center items vertically */
+      width: 100%; /* Ensure it takes the full width */
       margin-bottom: calc(1.5vh);
     }
+    .buttonsOnTop > div {
+      flex: 1; /* Allow each child to grow and take equal space */
+      margin-right: 10px; /* Add some spacing between the elements */
+    }
+
+    .buttonsOnTop > div:last-child {
+      margin-right: 0; /* Remove margin for the last element */
+    }
     select {
-      float: left;
+      width: 100%; /* Make the select fill its container */
       font-size: 16px;
       padding: 10px;
       border-radius: 5px;
-      width: 100px;
       height: 50px;
+      text-align: center;
+      text-align-last: center; /* Ensures the selected option is centered */
       cursor: pointer;
       background-color: #B7CCB8;
       border: 1px solid #608c61;
@@ -68,9 +81,13 @@
       align-items: center;
       text-align: center;
     }
-    .klausurenbutton button{
-      width: 100%;
-      height: 100%;
+    .klausurenbutton {
+      width: 100%; /* Make the button fill its container */
+    }
+
+    .klausurenbutton button {
+      width: 100%; /* Make the button fill its container */
+      height: 50px; /* Match the height of the select */
       cursor: pointer;
       font-size: 16px;
       border-radius: 5px;
@@ -82,12 +99,7 @@
       cursor: pointer;
     }
     button:hover { color: #632727; }
-    .klausurenbutton{
-      float: left;
-      margin-left: 20px;
-      width: 100px;
-      height: 50px;
-    }
+
     #currentDate {
       letter-spacing: calc(0.5vw);
       color: #230903;
