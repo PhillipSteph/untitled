@@ -38,13 +38,24 @@
     #right{
       right: 0;
     }
-    #currentDate {
-      letter-spacing: calc(0.5vw);
-      color: #230903;
-      white-space: nowrap;
-      font-size: 24px; /* Adjust size if necessary */
+
+    /* Dropdown Styling */
+    .buttonsOnTop {
+      margin-bottom: calc(1.5vh);
     }
-    button {
+    select {
+      float: left;
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 5px;
+      width: 100px;
+      height: 50px;
+      cursor: pointer;
+      background-color: #B7CCB8;
+      border: 1px solid #608c61;
+      color: #230903;
+    }
+    button#left, button#right{
       touch-action: manipulation;
       width: 100px;
       height: 100px;
@@ -57,7 +68,32 @@
       align-items: center;
       text-align: center;
     }
+    .klausurenbutton button{
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+      background-color: #B7CCB8;
+      border: 1px solid #608c61;
+      color: #230903;
+    }
+    button{
+      cursor: pointer;
+    }
     button:hover { color: #632727; }
+    .klausurenbutton{
+      float: left;
+      margin-left: 20px;
+      width: 100px;
+      height: 50px;
+    }
+    #currentDate {
+      letter-spacing: calc(0.5vw);
+      color: #230903;
+      white-space: nowrap;
+      font-size: 24px; /* Adjust size if necessary */
+    }
     #events {
       height: fit-content;
       width: 100%;
@@ -77,6 +113,7 @@
     }
     .event strong { display: block; font-size: 20px; font-weight: 500; }
     .event .location { font-size: 0.9em; }
+
     .time {
       padding-right: 20px;
       width: 15%;
@@ -87,43 +124,78 @@
       margin-top: 3px;
       margin-left: 7px;
     }
-    /* Dropdown Styling */
-    .course-selection {
-      margin-bottom: calc(1vh);
-    }
-    select {
-      font-size: 16px;
-      padding: 10px;
-      border-radius: 5px;
-      border: 2px solid #230903;
-      color: #230903;
-      width: 100px;
-      height: 50px;
-      cursor: pointer;
-      background-color: #f6f6f6;
-    }
     /* Red marked events */
     .red-marked {
       color: #230903;
       background-color: #D3B88C;
       border-color: #937240;
     }
+
+    #overlay {
+      position: fixed;
+      left: 2vw;
+      top: 5vh;
+      width: 90vw;
+      height: 90vh;
+      padding: 3vw;
+      border-radius: 10px;
+      color: #230903;
+      background-color: #F4F2F3;
+      border: 1px solid #b8aea8;
+      display: none;
+      z-index: 100;
+      overflow-y: auto; /* Enable vertical scrolling */
+    }
+
+    #overlay h1 {
+      letter-spacing: calc(0.5vw);
+      color: #230903;
+      white-space: nowrap;
+      font-size: 24px; /* Adjust size if necessary */
+    }
+
+    #overlay .close-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 40px;
+      cursor: pointer;
+      color: #230903;
+      background: none;
+      border: none;
+    }
+
+    #overlay .close-button:hover {
+      color: #632727;
+    }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
+<div id="overlay">
+  <h1>Klausuren</h1>
+  <div id="exams"></div>
+  <span onclick="toggleKlausuren()">close</span>
+</div>
 <div class="container">
   <!-- Course Selection Dropdown -->
-  <div class="course-selection">
-    <select id="course-select" onchange="selectCalendar(this.value)">
-      <option value="PIA23">PIA23</option>
-      <option value="PIB23">PIB23</option>
-      <option value="PIC23">PIC23</option>
-      <option value="WI23">WI23</option>
-      <option value="WIA24">WIA24</option>
-      <option value="WIB24">WIB24</option>
-    </select>
+  <div class="buttonsOnTop">
+    <div>
+      <select id="course-select" onchange="selectCalendar(this.value)">
+        <option value="PIA23">PIA23</option>
+        <option value="PIB23">PIB23</option>
+        <option value="PIC23">PIC23</option>
+        <option value="WI23">WI23</option>
+        <option value="WIA24">WIA24</option>
+        <option value="WIB24">WIB24</option>
+      </select>
+    </div>
+
+    <div class="klausurenbutton">
+      <button onclick="toggleKlausuren()">Klausuren</button>
+    </div>
   </div>
+
 
   <!-- Navigation Buttons and Date -->
   <div class="nav-buttons">
@@ -156,7 +228,29 @@
   ];
 
   let redMarkedEvents = JSON.parse(localStorage.getItem('redMarkedEvents')) || {};
+  let overlay = document.getElementById("overlay");
+  overlay.style.display = "none";
 
+  function stringContains(string, containingstring){
+    let wordlength = containingstring.length;
+    for(let i = 0; i < string.length - wordlength; i++){
+      let substring = string.substring(i, i+wordlength);
+      if(substring === containingstring) return true;
+    }
+    return false;
+  }
+  let klausuren = false;
+  function toggleKlausuren(){
+    try {
+      if (overlay.style.display === "none") {
+        overlay.style.display = "block";
+      } else {
+        overlay.style.display = "none";
+      }
+    }catch(e){
+      console.log(e);
+    }
+  }
   function formatDate(date) {
     return date.toISOString().split("T")[0];
   }
@@ -220,6 +314,7 @@
 
     const filteredEvents = events.filter(e => e["DTSTART"] && formatDate(parseICSTime(e["DTSTART"])) === formatDate(currentDate));
     displayEvents(filteredEvents);
+    displayExams(events);
   }
 
   function parseICSTime(icsTime) {
@@ -227,7 +322,71 @@
     if (!match) return new Date();
     return new Date(Date.UTC(match[1], match[2] - 1, match[3], match[4], match[5], match[6]));
   }
+  function displayExams(exams) {
+    const examsContainer = document.getElementById("overlay");
+    examsContainer.innerHTML = "";
 
+    // Add a close button
+    const closeButton = document.createElement("button");
+    closeButton.className = "close-button";
+    closeButton.innerHTML = "×"; // "X" symbol
+    closeButton.onclick = toggleKlausuren;
+    examsContainer.appendChild(closeButton);
+
+    // Add a heading
+    const heading = document.createElement("h1");
+    heading.textContent = "Klausuren";
+    examsContainer.appendChild(heading);
+
+    // Get today's date (without time)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to 00:00:00 for accurate comparison
+
+    // Filter exams to only include events with a date of today or later
+    const upcomingExams = exams.filter((event) => {
+      const eventDate = parseICSTime(event["DTSTART"]);
+      eventDate.setHours(0, 0, 0, 0); // Set time to 00:00:00 for accurate comparison
+      return eventDate >= today; // Only include events from today onwards
+    });
+
+    // Add exams content
+    if (upcomingExams.length === 0) {
+      const noExamsMessage = document.createElement("p");
+      noExamsMessage.textContent = "Keine Klausuren gefunden.";
+      examsContainer.appendChild(noExamsMessage);
+    } else {
+      const klausurenEvents = [];
+      upcomingExams.forEach((event) => {
+        let startingtime = parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
+        let endtime = parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
+        let date = parseICSTime(event["DTSTART"]).toLocaleDateString("de-DE");
+        let datelocation = (event["LOCATION"] ? event["LOCATION"].split("\\")[0] : "Unbekannter Ort");
+        let prof = (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
+        let heading = event["SUMMARY"].replace(/"/g, "");
+
+        if (heading.length > 19) heading = heading.slice(0, 18);
+        if (startingtime.length === 7) startingtime = "0" + startingtime;
+        if (endtime.length === 7) endtime = "0" + endtime;
+
+        const div = document.createElement("div");
+        div.className = "event";
+        div.innerHTML = `<div class="time">${startingtime}<br>${endtime}</div>
+                          <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
+        let suma = event["SUMMARY"].toLowerCase();
+
+        if (suma.includes("klausur") || suma.includes("exam")) {
+          const timeDiv = div.querySelector('.time');
+          if (timeDiv) {
+            timeDiv.style.lineHeight = '25px';
+            timeDiv.innerHTML = "<b>" + date+"</b>\n" + timeDiv.innerHTML;
+          }
+          klausurenEvents.push(div);
+        }
+      });
+
+      klausurenEvents.forEach((div) => examsContainer.appendChild(div));
+    }
+  }
   function displayEvents(events) {
     const eventsContainer = document.getElementById("events");
     eventsContainer.innerHTML = "";
@@ -236,7 +395,6 @@
       eventsContainer.innerHTML = "<p>Keine Termine für diesen Tag.</p>";
       return;
     }
-
     const nonRedMarkedEvents = [];
     const redMarkedEventElements = [];
     let groupedEvents = {};
@@ -247,7 +405,6 @@
       }
       groupedEvents[className].push(event);
     });
-
     events.forEach((event, i) => {
       let startingtime = parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
       let endtime = parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
@@ -263,7 +420,6 @@
       div.className = "event";
       div.innerHTML = `<div class="time">${startingtime}<br>${endtime}</div>
                           <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
-
       if (redMarkedEvents[event["SUMMARY"]]) {
         div.classList.add('red-marked');
         redMarkedEventElements.push({ div, event, index: i });
@@ -273,8 +429,6 @@
 
       div.addEventListener('click', () => toggleRedMark(event["SUMMARY"], div));
     });
-
-    // Apply styling based on neighbors for non-red-marked events
     nonRedMarkedEvents.forEach(({ div, event, index }, i) => {
       const prevEvent = i > 0 ? nonRedMarkedEvents[i - 1].event : null;
       const nextEvent = i < nonRedMarkedEvents.length - 1 ? nonRedMarkedEvents[i + 1].event : null;
@@ -328,7 +482,6 @@
       }
     });
 
-    // Append non-red-marked events first, then red-marked events
     nonRedMarkedEvents.forEach(({ div }) => eventsContainer.appendChild(div));
     redMarkedEventElements.forEach(({ div }) => eventsContainer.appendChild(div));
   }
