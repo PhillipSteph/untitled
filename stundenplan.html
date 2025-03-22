@@ -225,6 +225,11 @@
 
 <script>
   let currentDate = new Date();
+
+  do {
+    currentDate.setDate(currentDate.getDate() + 1);
+  } while (currentDate.getDay() === 6 || currentDate.getDay() === 0); // 6 = Saturday, 0 = Sunday
+
   let currentCalendar = localStorage.getItem('selectedCalendar') || 'PIA23'; // Default to PIA23
   const ICS_FILES = {
     'PIA23': 'calendar.ics',
@@ -288,7 +293,6 @@
     // Refresh the event list to apply sorting again
     fetchEvents();
   }
-
 
   function displayDate() {
     document.getElementById("currentDate").innerText = getGermanDateLayout(formatDate(currentDate));
