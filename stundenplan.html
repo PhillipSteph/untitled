@@ -227,12 +227,12 @@
       left: 2vw;
       top: 5vh;
       width: 90vw;
-      height: 90vh;
-      padding: 3vw;
+      height: fit-content;
+      padding: 3vw 3vw 10vw;
       border-radius: 10px;
       color: #230903;
-      background-color: #FEFAE0;
-      border: 1px solid #b8aea8;
+      background-color: #fffdf9;
+      border: 1px solid #dac7be;
       display: none;
       z-index: 100;
       overflow-y: auto; /* Enable vertical scrolling */
@@ -507,8 +507,8 @@
         if (endtime.length === 7) endtime = "0" + endtime;
 
         const div = document.createElement("div");
-        div.className = "event";
-        div.innerHTML = `<div class="time">${startingtime}<br>${endtime}</div>
+        div.className = "event color-marked-green";
+        div.innerHTML = `<div class="time ">${startingtime}<br>${endtime}</div>
                           <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
         let suma = event["SUMMARY"].toLowerCase();
 
