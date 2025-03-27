@@ -7,7 +7,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
     body {
-      background-color: #F4F2F3;
+      background-color: #fffefb;
       font-family: "Calibri", sans-serif;
       text-align: center;
       max-width: 100%;
@@ -64,8 +64,8 @@
       text-align: center;
       text-align-last: center; /* Ensures the selected option is centered */
       cursor: pointer;
-      background-color: #B7CCB8;
-      border: 1px solid #608c61;
+      background-color: #FDF0D5;
+      border: 1px solid #baaf98;
       color: #230903;
     }
     button#left, button#right{
@@ -91,8 +91,8 @@
       cursor: pointer;
       font-size: 16px;
       border-radius: 5px;
-      background-color: #B7CCB8;
-      border: 1px solid #608c61;
+      background-color: #FDF0D5;
+      border: 1px solid #baaf98;
       color: #230903;
     }
     button{
@@ -113,14 +113,14 @@
     .event {
       overflow: hidden;
       font-size:18px;
-      border: 1px solid #608c61;
+      border: 1px solid #778844;
       color: #230903;
       height: 77px;/*184 for double, 294 for tripple*/
       line-height: 25px;
       padding: 10px;
       margin-top: 10px;
       border-radius: 8px;
-      background-color: #B7CCB8;
+      background-color: #BBC893;
       cursor: pointer;
     }
     .event strong { display: block; font-size: 20px; font-weight: 500; }
@@ -136,13 +136,92 @@
       margin-top: 3px;
       margin-left: 7px;
     }
-    /* Red marked events */
-    .red-marked {
-      color: #230903;
-      background-color: #D3B88C;
-      border-color: #937240;
+
+    /* Color marked events */
+    .color-marked-default { background-color: #BBC893; border-color: #778844; }
+    .color-marked-brown { background-color: #F6A2A7; border-color: #c12934;}
+    .color-marked-purple { background-color: #C6D8E7; border-color: #668698; }
+    .color-marked-green { background-color: #E1ECD5; border-color: #a6bc8f; }
+    .color-marked-red { background-color: #EAC49A; border-color: #cd9e6a; }
+    .color-marked-orange { background-color: #FDF0D5; border-color: #baaf98; }
+    .color-marked-yellow { background-color: #FFD6D6; border-color: #efa6a6; }
+    /* Color selection overlay */
+    #colorOverlay {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 80vw;
+      max-width: 400px;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #fffefb;
+      border: 1px solid #c5c5c5;
+      display: none;
+      z-index: 200;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
+    #colorOverlay h2 {
+      margin-top: 0;
+      color: #230903;
+    }
+
+    #colorOverlay .close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #230903;
+      background: none;
+      border: none;
+    }
+
+    .color-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .color-option {
+      width: 100%;
+      height: 60px;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .color-option:hover {
+      border-color: #230903;
+    }
+
+    .color-option.selected {
+      border-color: #230903;
+      box-shadow: 0 0 0 2px #230903;
+    }
+
+    #colorOverlay .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    #colorOverlay button {
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #colorOverlay .remove-color {
+      background-color: #f8d7da;
+      border: 1px solid #721c24;
+      color: #721c24;
+      width: 45%;
+      margin-left: 2.5%;
+      margin-right: 2.5%;
+    }
     #overlay {
       position: fixed;
       left: 2vw;
@@ -152,7 +231,7 @@
       padding: 3vw;
       border-radius: 10px;
       color: #230903;
-      background-color: #F4F2F3;
+      background-color: #FEFAE0;
       border: 1px solid #b8aea8;
       display: none;
       z-index: 100;
@@ -184,6 +263,24 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
+<div id="colorOverlay">
+  <button class="close-button" onclick="closeColorOverlay()">×</button>
+  <h2 id="colorselector"></h2>
+  <h3>Farbe zuteilen</h3>
+  <div class="color-options">
+    <div class="color-option color-marked-orange" onclick="selectColor('orange')"></div>
+    <div class="color-option color-marked-red" onclick="selectColor('red')"></div>
+    <div class="color-option color-marked-green" onclick="selectColor('green')"></div>
+    <div class="color-option color-marked-default" onclick="selectColor('default')"></div>
+    <div class="color-option color-marked-purple" onclick="selectColor('purple')"></div>
+    <div class="color-option color-marked-yellow" onclick="selectColor('yellow')"></div>
+  </div>
+  <div class="action-buttons">
+    <button class ="remove-color" onclick="selectColor('brown')">Event-Serie aussortieren</button>
+    <button class="remove-color" onclick="removeColor()">Farbe entfernen</button>
+  </div>
+</div>
+
 <div id="overlay">
   <h1>Klausuren</h1>
   <div id="exams"></div>
@@ -243,9 +340,12 @@
     "Oktober","November","Dezember"
   ];
 
-  let redMarkedEvents = JSON.parse(localStorage.getItem('redMarkedEvents')) || {};
+  let eventColors = JSON.parse(localStorage.getItem('eventColors')) || {};
   let overlay = document.getElementById("overlay");
+  let colorOverlay = document.getElementById("colorOverlay");
+  let currentEventBeingColored = null;
   overlay.style.display = "none";
+  colorOverlay.style.display = "none";
 
   function stringContains(string, containingstring){
     let wordlength = containingstring.length;
@@ -267,6 +367,47 @@
       console.log(e);
     }
   }
+
+  function openColorOverlay(eventElement, eventName) {
+    document.getElementById("colorselector").innerHTML = eventName;
+    currentEventBeingColored = { element: eventElement, name: eventName };
+    colorOverlay.style.display = "block";
+  }
+
+  function closeColorOverlay() {
+    colorOverlay.style.display = "none";
+    currentEventBeingColored = null;
+  }
+
+  function selectColor(color) {
+    if (!currentEventBeingColored) return;
+
+    const { element, name } = currentEventBeingColored;
+
+    // Remove all color classes
+    element.className = element.className.replace(/\bcolor-marked-\S+/g, '');
+
+    if (color !== 'default') {
+      element.classList.add(`color-marked-${color}`);
+    }
+    // Update stored colors
+    if (color === 'default') {
+      delete eventColors[name];
+    } else {
+      eventColors[name] = color;
+    }
+
+    localStorage.setItem('eventColors', JSON.stringify(eventColors));
+
+    fetchEvents();
+
+    closeColorOverlay();
+  }
+
+  function removeColor() {
+    selectColor('default');
+  }
+
   function formatDate(date) {
     return date.toISOString().split("T")[0];
   }
@@ -277,19 +418,6 @@
     } while (currentDate.getDay() === 6 || currentDate.getDay() === 0); // 6 = Saturday, 0 = Sunday
 
     displayDate();
-    fetchEvents();
-  }
-  function toggleRedMark(eventName, element) {
-    if (redMarkedEvents[eventName]) {
-      delete redMarkedEvents[eventName];
-      element.classList.remove('red-marked');
-    } else {
-      redMarkedEvents[eventName] = true;
-      element.classList.add('red-marked');
-    }
-    localStorage.setItem('redMarkedEvents', JSON.stringify(redMarkedEvents));
-
-    // Refresh the event list to apply sorting again
     fetchEvents();
   }
 
@@ -397,6 +525,7 @@
       klausurenEvents.forEach((div) => examsContainer.appendChild(div));
     }
   }
+
   function displayEvents(events, divID) {
     const eventsContainer = document.getElementById(divID);
     eventsContainer.innerHTML = "";
@@ -405,43 +534,48 @@
       eventsContainer.innerHTML = "<p>Keine Termine für diesen Tag.</p>";
       return;
     }
-    const nonRedMarkedEvents = [];
-    const redMarkedEventElements = [];
-    let groupedEvents = {};
+
+    const brownMarkedEvents = [];
+    const otherEvents = [];
+
     events.forEach(event => {
       const className = event["SUMMARY"];
-      if (!groupedEvents[className]) {
-        groupedEvents[className] = [];
-      }
-      groupedEvents[className].push(event);
-    });
-    events.forEach((event, i) => {
-      let startingtime = parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
-      let endtime = parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
-      let datelocation = (event["LOCATION"] ? event["LOCATION"].split("\\")[0] : "Unbekannter Ort");
-      let prof = (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
+      const startingtime = parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
+      const endtime = parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
+      const datelocation = (event["LOCATION"] ? event["LOCATION"].split("\\")[0] : "Unbekannter Ort");
+      const prof = (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
       let heading = event["SUMMARY"].replace(/"/g, "");
 
       if (heading.length > 19) heading = heading.slice(0, 18);
-      if (startingtime.length === 7) startingtime = "0" + startingtime;
-      if (endtime.length === 7) endtime = "0" + endtime;
+
+      const timeStr = startingtime.length === 7 ? "0" + startingtime : startingtime;
+      const endTimeStr = endtime.length === 7 ? "0" + endtime : endtime;
 
       const div = document.createElement("div");
       div.className = "event";
-      div.innerHTML = `<div class="time">${startingtime}<br>${endtime}</div>
-                          <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
-      if (redMarkedEvents[event["SUMMARY"]]) {
-        div.classList.add('red-marked');
-        redMarkedEventElements.push({ div, event, index: i });
+      div.innerHTML = `<div class="time">${timeStr}<br>${endTimeStr}</div>
+                      <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
+
+      // Apply saved color if it exists
+      if (eventColors[event["SUMMARY"]]) {
+        div.classList.add(`color-marked-${eventColors[event["SUMMARY"]]}`);
+      }
+
+      // Special handling for brown (original red-marked)
+      if (eventColors[event["SUMMARY"]] === 'brown') {
+        brownMarkedEvents.push({ div, event });
       } else {
-        nonRedMarkedEvents.push({ div, event, index: i });
+        otherEvents.push({ div, event });
       }
 
-      div.addEventListener('click', () => toggleRedMark(event["SUMMARY"], div));
+      div.addEventListener('click', () => openColorOverlay(div, event["SUMMARY"]));
     });
-    nonRedMarkedEvents.forEach(({ div, event, index }, i) => {
-      const prevEvent = i > 0 ? nonRedMarkedEvents[i - 1].event : null;
-      const nextEvent = i < nonRedMarkedEvents.length - 1 ? nonRedMarkedEvents[i + 1].event : null;
+
+    // Apply styling based on neighbors for all events
+    const allEvents = [...otherEvents, ...brownMarkedEvents];
+    allEvents.forEach(({ div, event }, i) => {
+      const prevEvent = i > 0 ? allEvents[i - 1].event : null;
+      const nextEvent = i < allEvents.length - 1 ? allEvents[i + 1].event : null;
 
       if (prevEvent && nextEvent &&
         event["LOCATION"] === prevEvent["LOCATION"] &&
@@ -450,50 +584,39 @@
         event["SUMMARY"] === nextEvent["SUMMARY"]) {
         // Only left and right borders remain, and no round corners
         div.style.borderRadius = "0";
-        div.style.borderLeft = "1px solid #608c61";
-        div.style.borderRight = "1px solid #608c61";
+        div.style.borderLeft = "1px solid " + getBorderColor(div);
+        div.style.borderRight = "1px solid " + getBorderColor(div);
         div.style.borderTop = "none";
         div.style.borderBottom = "none";
         div.style.marginTop = "0";
-      } else if (prevEvent && event["LOCATION"] === prevEvent["LOCATION"] && event["SUMMARY"] === prevEvent["SUMMARY"]) {
+      } else if (prevEvent &&
+        event["LOCATION"] === prevEvent["LOCATION"] &&
+        event["SUMMARY"] === prevEvent["SUMMARY"]) {
         div.style.marginTop = "0";
         div.style.borderRadius = "0 0 8px 8px";
         div.style.borderTop = "none";
-      } else if (nextEvent && event["LOCATION"] === nextEvent["LOCATION"] && event["SUMMARY"] === nextEvent["SUMMARY"]) {
-        div.style.borderRadius = "8px 8px 0 0";
-        div.style.borderBottom = "none";
-      }
-    });
-
-    // Apply styling based on neighbors for red-marked events
-    redMarkedEventElements.forEach(({ div, event, index }, i) => {
-      const prevEvent = i > 0 ? redMarkedEventElements[i - 1].event : null;
-      const nextEvent = i < redMarkedEventElements.length - 1 ? redMarkedEventElements[i + 1].event : null;
-
-      if (prevEvent && nextEvent &&
-        event["LOCATION"] === prevEvent["LOCATION"] &&
-        event["SUMMARY"] === prevEvent["SUMMARY"] &&
+      } else if (nextEvent &&
         event["LOCATION"] === nextEvent["LOCATION"] &&
         event["SUMMARY"] === nextEvent["SUMMARY"]) {
-        // Only left and right borders remain, and no round corners
-        div.style.borderRadius = "0";
-        div.style.borderLeft = "1px solid #ff0000"; // Red color for red-marked events
-        div.style.borderRight = "1px solid #ff0000";
-        div.style.borderTop = "none";
-        div.style.borderBottom = "none";
-        div.style.marginTop = "0";
-      } else if (prevEvent && event["LOCATION"] === prevEvent["LOCATION"] && event["SUMMARY"] === prevEvent["SUMMARY"]) {
-        div.style.marginTop = "0";
-        div.style.borderRadius = "0 0 8px 8px";
-        div.style.borderTop = "none";
-      } else if (nextEvent && event["LOCATION"] === nextEvent["LOCATION"] && event["SUMMARY"] === nextEvent["SUMMARY"]) {
         div.style.borderRadius = "8px 8px 0 0";
         div.style.borderBottom = "none";
       }
     });
 
-    nonRedMarkedEvents.forEach(({ div }) => eventsContainer.appendChild(div));
-    redMarkedEventElements.forEach(({ div }) => eventsContainer.appendChild(div));
+    // First display other events, then brown-marked events at the bottom
+    otherEvents.forEach(({ div }) => eventsContainer.appendChild(div));
+    brownMarkedEvents.forEach(({ div }) => eventsContainer.appendChild(div));
+  }
+
+  function getBorderColor(element) {
+    if (element.classList.contains('color-marked-red')) return '#cd9e6a';
+    if (element.classList.contains('color-marked-blue')) return '#4682B4';
+    if (element.classList.contains('color-marked-green')) return '#a6bc8f';
+    if (element.classList.contains('color-marked-yellow')) return '#efa6a6';
+    if (element.classList.contains('color-marked-purple')) return '#668698';
+    if (element.classList.contains('color-marked-orange')) return '#baaf98';
+    if (element.classList.contains('color-marked-brown')) return '#c12934';
+    return '#778844'; // Default border color
   }
 
   function selectCalendar(calendar) {
