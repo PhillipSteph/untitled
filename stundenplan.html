@@ -187,7 +187,6 @@
 <div id="overlay">
   <h1>Klausuren</h1>
   <div id="exams"></div>
-  <span onclick="toggleKlausuren()">close</span>
 </div>
 <div class="container">
   <!-- Course Selection Dropdown -->
@@ -348,11 +347,6 @@
     closeButton.innerHTML = "×"; // "X" symbol
     closeButton.onclick = toggleKlausuren;
     examsContainer.appendChild(closeButton);
-
-    // Add a heading
-    const heading = document.createElement("h1");
-    heading.textContent = "Klausuren";
-    examsContainer.appendChild(heading);
 
     // Get today's date (without time)
     const today = new Date();
