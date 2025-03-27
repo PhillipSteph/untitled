@@ -329,8 +329,8 @@
     });
 
     const filteredEvents = events.filter(e => e["DTSTART"] && formatDate(parseICSTime(e["DTSTART"])) === formatDate(currentDate));
-    displayEvents(filteredEvents);
-    displayExams(events);
+    displayEvents(filteredEvents, "events");
+    displayExams(events, "exams");
   }
 
   function parseICSTime(icsTime) {
@@ -338,8 +338,8 @@
     if (!match) return new Date();
     return new Date(Date.UTC(match[1], match[2] - 1, match[3], match[4], match[5], match[6]));
   }
-  function displayExams(exams) {
-    const examsContainer = document.getElementById("overlay");
+  function displayExams(exams, divID) {
+    const examsContainer = document.getElementById(divID);
     examsContainer.innerHTML = "";
 
     // Add a close button
@@ -403,8 +403,8 @@
       klausurenEvents.forEach((div) => examsContainer.appendChild(div));
     }
   }
-  function displayEvents(events) {
-    const eventsContainer = document.getElementById("events");
+  function displayEvents(events, divID) {
+    const eventsContainer = document.getElementById(divID);
     eventsContainer.innerHTML = "";
 
     if (events.length === 0) {
