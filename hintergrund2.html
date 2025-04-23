@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Backgrounds</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      height: 100vh;
+      background-image: url("bg.jpg");
+      background-position: bottom;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      font-family: "Tahoma", "Microsoft Sans Serif", sans-serif;
+      font-size: 11px;
+      color: black;
+    }
+    .events-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      height: 100%;
+    }
+    #events {
+      flex-grow: 1;
+      max-width: 100%;
+    }
+    button#left,
+    button#right {
+      width: 30px;
+      height: 100%;
+      font-size: 32px;
+      font-weight: 100;
+      background-color: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+
+    .left {
+      width: calc(25% + 40px);
+      height: 100%;
+      overflow: hidden;
+    }
+    .mainright {
+      width: 80%;
+      height: 100%;
+      display: flex;
+      justify-content: center;   /* horizontal centering */
+      align-items: center;       /* vertical centering */
+    }
+
+    .window {
+      width: 648px;
+      height: 500px;
+      font-size: 50px;
+      background-image: url("window.png");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      padding-top: 69px;
+      padding-left: 22px;
+    }
+    button{
+      cursor: pointer;
+    }
+    button:hover { color: #632727; }
+    #events {
+      height: fit-content;
+      width: 100%;
+    }
+    .event {
+      overflow: hidden;
+      font-size:18px;
+      height: 77px;/*184 for double, 294 for tripple*/
+      line-height: 25px;
+      padding: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      border: 1px solid rgba(0, 0, 0, 0.57);
+      background-color: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+    }
+    .event strong { display: block; font-weight: 500; }
+    .event .location { font-size: 0.9em; }
+
+    .time {
+      padding-right: 25px;
+      width: 30%;
+      float: left;
+      font-size: 17px;
+      line-height: 30px;
+      text-align: left;
+      margin-left: 7px;
+    }
+    .date {
+      float: left;
+      margin-right: 20px;
+
+    }
+  .right{
+    width: 60%;
+    float: right;
+    font-size: 15px;
+    line-height: 20px;
+    text-align: left;
+    margin-left: 7px;
+  }
+  </style>
+</head>
+<body>
+<div class="left">
+  <div class="events-container">
+    <button id="left" onclick="changeDate(-1)"><</button>
+    <div id="events"></div>
+    <button id="right" onclick="changeDate(1)">></button>
+  </div>
+</div>
+<div class="mainright">
+  <div class="window">
+    <div id="currentDate" class="date"></div>
+    <div id="time">
+      00:00:00
+    </div>
+  </div>
+</div>
+</body>
+<script>
+  let timeval;
+  async function timez(){
+    while(true){
+      timeval = new Date();
+      let time = timeval.getTime();
+      let year = timeval.getFullYear();
+      let month = timeval.getMonth();
+      let day = timeval.getDay();
+      let hours = timeval.getHours().toString().padStart(2,"0");
+      let minutes = timeval.getMinutes().toString().padStart(2,"0");
+      let seconds = timeval.getSeconds().toString().padStart(2,"0");
+
+      document.getElementById("time").innerHTML ="" + hours +":"+ minutes +":"+ seconds;
+
+      await sleep(1000);
+    }
+  }
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  let currentDate = new Date();
+
+  while (currentDate.getDay() === 6 || currentDate.getDay() === 0) {
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  let currentCalendar = localStorage.getItem('selectedCalendar') || 'PIA23'; // Default to PIA23
+  const ICS_FILES = {
+    'PIA23': 'calendar.ics',
+    'PIB23': 'calendarB.ics',
+    'PIC23': 'calendarC.ics',
+    'WI23': 'calendarW.ics',
+    'WIA24': 'calendarWIA24.ics',
+    'WIB24': 'calendarWIB24.ics'
+  };
+  let months = [
+    "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September",
+    "Oktober","November","Dezember"
+  ];
+
+  let eventColors = JSON.parse(localStorage.getItem('eventColors')) || {};
+  let currentEventBeingColored = null;
+
+  function stringContains(string, containingstring){
+    let wordlength = containingstring.length;
+    for(let i = 0; i < string.length - wordlength; i++){
+      let substring = string.substring(i, i+wordlength);
+      if(substring === containingstring) return true;
+    }
+    return false;
+  }
+
+  function formatDate(date) {
+    return date.toISOString().split("T")[0];
+  }
+
+  function changeDate(days) {
+    do {
+      currentDate.setDate(currentDate.getDate() + days);
+    } while (currentDate.getDay() === 6 || currentDate.getDay() === 0); // 6 = Saturday, 0 = Sunday
+
+    displayDate();
+    fetchEvents();
+  }
+
+  function displayDate() {
+    document.getElementById("currentDate").innerText = getGermanDateLayout(formatDate(currentDate));
+  }
+
+  async function fetchEvents() {
+    const response = await fetch(ICS_FILES[currentCalendar]);
+    const text = await response.text();
+    parseICS(text);
+  }
+
+  function getGermanDateLayout(date) {
+    let newdate = date.split("-");
+    let day = new Date(date).getDay();
+    return newdate[2] + ". " + months[parseInt(newdate[1]) - 1];
+  }
+  function parseICS(data) {
+    const events = [];
+    const lines = data.split("\n");
+    let event = {};
+
+    lines.forEach(line => {
+      if (line.startsWith("BEGIN:VEVENT")) {
+        event = {};
+      } else if (line.startsWith("END:VEVENT")) {
+        events.push(event);
+      } else {
+        const [key, value] = line.split(/:(.+)/);
+        if (key && value) event[key.trim()] = value.trim();
+      }
+    });
+
+    const filteredEvents = events.filter(e => e["DTSTART"] && formatDate(parseICSTime(e["DTSTART"])) === formatDate(currentDate));
+    displayEvents(filteredEvents, "events");
+  }
+
+  function parseICSTime(icsTime) {
+    const match = icsTime.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z?/);
+    if (!match) return new Date();
+    return new Date(Date.UTC(match[1], match[2] - 1, match[3], match[4], match[5], match[6]));
+  }
+  function displayEvents(events, divID) {
+    const eventsContainer = document.getElementById(divID);
+    eventsContainer.innerHTML = "";
+
+    if (events.length === 0) {
+      eventsContainer.innerHTML = "<p>Keine Termine für diesen Tag.</p>";
+      return;
+    }
+
+    const brownMarkedEvents = [];
+    const otherEvents = [];
+
+    events.forEach(event => {
+      const className = event["SUMMARY"];
+      const startingtime = parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
+      const endtime = parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
+      const datelocation = (event["LOCATION"] ? event["LOCATION"].split("\\")[0] : "Unbekannter Ort");
+      const prof = (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
+      let heading = event["SUMMARY"].replace(/"/g, "");
+
+      if (heading.length > 19) heading = heading.slice(0, 18);
+
+      const timeStr = startingtime.length === 7 ? "0" + startingtime : startingtime;
+      const endTimeStr = endtime.length === 7 ? "0" + endtime : endtime;
+
+      const div = document.createElement("div");
+      div.className = "event";
+      div.innerHTML = `<div class="time">${timeStr}<br>${endTimeStr}</div>
+                      <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
+// Special handling for brown (original red-marked)
+      if (eventColors[event["SUMMARY"]] === 'brown') {
+        brownMarkedEvents.push({ div, event });
+      } else {
+        otherEvents.push({ div, event });
+      }
+      div.addEventListener('click', () => openColorOverlay(div, event["SUMMARY"]));
+    });
+
+    // Apply styling based on neighbors for all events
+    const allEvents = [...otherEvents, ...brownMarkedEvents];
+    allEvents.forEach(({ div, event }, i) => {
+      const prevEvent = i > 0 ? allEvents[i - 1].event : null;
+      const nextEvent = i < allEvents.length - 1 ? allEvents[i + 1].event : null;
+
+      if (prevEvent && nextEvent &&
+        event["LOCATION"] === prevEvent["LOCATION"] &&
+        event["SUMMARY"] === prevEvent["SUMMARY"] &&
+        event["LOCATION"] === nextEvent["LOCATION"] &&
+        event["SUMMARY"] === nextEvent["SUMMARY"]) {
+        // Only left and right borders remain, and no round corners
+        div.style.borderRadius = "0";
+        div.style.borderLeft = "1px solid " + getBorderColor(div);
+        div.style.borderRight = "1px solid " + getBorderColor(div);
+        div.style.borderTop = "none";
+        div.style.borderBottom = "none";
+        div.style.marginTop = "0";
+      } else if (prevEvent &&
+        event["LOCATION"] === prevEvent["LOCATION"] &&
+        event["SUMMARY"] === prevEvent["SUMMARY"]) {
+        div.style.marginTop = "0";
+        div.style.borderRadius = "0 0 8px 8px";
+        div.style.borderTop = "none";
+      } else if (nextEvent &&
+        event["LOCATION"] === nextEvent["LOCATION"] &&
+        event["SUMMARY"] === nextEvent["SUMMARY"]) {
+        div.style.borderRadius = "8px 8px 0 0";
+        div.style.borderBottom = "none";
+      }
+    });
+
+    // First display other events, then brown-marked events at the bottom
+    otherEvents.forEach(({ div }) => eventsContainer.appendChild(div));
+    brownMarkedEvents.forEach(({ div }) => eventsContainer.appendChild(div));
+  }
+
+  function getBorderColor(element) {
+    return 'rgba(0,0,0,0.57)'; // Default border color
+  }
+
+  displayDate();
+  fetchEvents();
+  timez();
+</script>
+</html>
