@@ -133,6 +133,7 @@
       padding: 10px;
       margin-top: 10px;
       cursor: pointer;
+      border: 1px rgba(0,0,0,0.57);
       background-color: rgba(234, 196, 154, 0.25);
       backdrop-filter: blur(8px);
       box-shadow: 0 4px 12px rgba(205, 158, 106, 0.2);
@@ -474,6 +475,8 @@
         event["SUMMARY"] === nextEvent["SUMMARY"]) {
         // Only left and right borders remain, and no round corners
         div.style.borderRadius = "0";
+        div.style.borderLeft = "1px solid " + getBorderColor(div);
+        div.style.borderRight = "1px solid " + getBorderColor(div);
         div.style.borderTop = "none";
         div.style.borderBottom = "none";
         div.style.marginTop = "0";
@@ -497,14 +500,7 @@
   }
 
   function getBorderColor(element) {
-    if (element.classList.contains('color-marked-red')) return '#cd9e6a';
-    if (element.classList.contains('color-marked-blue')) return '#4682B4';
-    if (element.classList.contains('color-marked-green')) return '#a6bc8f';
-    if (element.classList.contains('color-marked-yellow')) return '#efa6a6';
-    if (element.classList.contains('color-marked-purple')) return '#668698';
-    if (element.classList.contains('color-marked-orange')) return '#baaf98';
-    if (element.classList.contains('color-marked-brown')) return '#c12934';
-    return '#778844'; // Default border color
+    return 'rgba(0,0,0,0.57)'; // Default border color
   }
 
   displayDate();
