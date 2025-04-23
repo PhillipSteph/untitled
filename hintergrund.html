@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Backgrounds</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      height: 100vh;
+      background-image: url("bg.jpg");
+      background-position: bottom;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .left {
+      width: 20%;
+      height: 100%;
+      overflow: hidden;
+      background-color: rgba(114, 28, 36, 0);
+    }
+
+    .right {
+      width: 80%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .container {
+      width: 90%; /* Any width */
+      margin: 0 auto;
+      padding: 0 20px 20px;
+    }
+    .nav-buttons {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    #left, #right {
+      width: 25%;
+      position: absolute; /* Remove absolute positioning */
+      flex: 0 0 100px; /* Keep buttons at a fixed width */
+    }
+    #left{
+      left: 0;
+    }
+    #right{
+      right: 0;
+    }
+
+    /* Dropdown Styling */
+    .buttonsOnTop {
+      display: flex; /* Use flexbox to align items horizontally */
+      justify-content: space-between; /* Space out the items */
+      align-items: center; /* Center items vertically */
+      width: 100%; /* Ensure it takes the full width */
+      margin-bottom: calc(1.5vh);
+    }
+    .buttonsOnTop > div {
+      flex: 1; /* Allow each child to grow and take equal space */
+      margin-right: 10px; /* Add some spacing between the elements */
+    }
+
+    .buttonsOnTop > div:last-child {
+      margin-right: 0; /* Remove margin for the last element */
+    }
+    select {
+      width: 100%; /* Make the select fill its container */
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 5px;
+      height: 50px;
+      text-align: center;
+      text-align-last: center; /* Ensures the selected option is centered */
+      cursor: pointer;
+      background-color: #FDF0D5;
+      border: 1px solid #baaf98;
+      color: #230903;
+    }
+    button#left, button#right{
+      touch-action: manipulation;
+      width: 100px;
+      height: 100px;
+      font-size: 40px;
+      background-color: transparent;
+      border: none;
+      color: #451717;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    .klausurenbutton {
+      width: 100%; /* Make the button fill its container */
+    }
+
+    .klausurenbutton button {
+      width: 100%; /* Make the button fill its container */
+      height: 50px; /* Match the height of the select */
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+      background-color: #FDF0D5;
+      border: 1px solid #baaf98;
+      color: #230903;
+    }
+    button{
+      cursor: pointer;
+    }
+    button:hover { color: #632727; }
+
+    #currentDate {
+      letter-spacing: calc(0.5vw);
+      color: #230903;
+      white-space: nowrap;
+      font-size: 24px; /* Adjust size if necessary */
+    }
+    #events {
+      height: fit-content;
+      width: 100%;
+    }
+    .event {
+      overflow: hidden;
+      font-size:18px;
+      border: 1px solid #778844;
+      color: #230903;
+      height: 77px;/*184 for double, 294 for tripple*/
+      line-height: 25px;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      background-color: #BBC893;
+      cursor: pointer;
+    }
+    .event strong { display: block; font-size: 20px; font-weight: 500; }
+    .event .location { font-size: 0.9em; }
+
+    .time {
+      padding-right: 20px;
+      width: 15%;
+      float: left;
+      font-size: 20px;
+      line-height: 35px;
+      text-align: left;
+      margin-top: 3px;
+      margin-left: 7px;
+    }
+
+    /* Color marked events */
+    .color-marked-default { background-color: #BBC893; border-color: #778844; }
+    .color-marked-brown { background-color: #F6A2A7; border-color: #c12934;}
+    .color-marked-purple { background-color: #C6D8E7; border-color: #668698; }
+    .color-marked-green { background-color: #E1ECD5; border-color: #a6bc8f; }
+    .color-marked-red { background-color: #EAC49A; border-color: #cd9e6a; }
+    .color-marked-orange { background-color: #FDF0D5; border-color: #baaf98; }
+    .color-marked-yellow { background-color: #FFD6D6; border-color: #efa6a6; }
+    /* Color selection overlay */
+    #colorOverlay {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 80vw;
+      max-width: 400px;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #fffefb;
+      border: 1px solid #c5c5c5;
+      display: none;
+      z-index: 200;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    #colorOverlay h2 {
+      margin-top: 0;
+      color: #230903;
+    }
+
+    #colorOverlay .close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #230903;
+      background: none;
+      border: none;
+    }
+
+    .color-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .color-option {
+      width: 100%;
+      height: 60px;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .color-option:hover {
+      border-color: #230903;
+    }
+
+    .color-option.selected {
+      border-color: #230903;
+      box-shadow: 0 0 0 2px #230903;
+    }
+
+    #colorOverlay .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    #colorOverlay button {
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #colorOverlay .remove-color {
+      background-color: #f8d7da;
+      border: 1px solid #721c24;
+      color: #721c24;
+      width: 45%;
+      margin-left: 2.5%;
+      margin-right: 2.5%;
+    }
+    #overlay {
+      position: fixed;
+      left: 2vw;
+      top: 5vh;
+      width: 90vw;
+      height: fit-content;
+      padding: 3vw 3vw 10vw;
+      border-radius: 10px;
+      color: #230903;
+      background-color: #fffdf9;
+      border: 1px solid #dac7be;
+      display: none;
+      z-index: 100;
+      overflow-y: auto; /* Enable vertical scrolling */
+    }
+
+    #overlay h1 {
+      letter-spacing: calc(0.5vw);
+      color: #230903;
+      white-space: nowrap;
+      font-size: 24px; /* Adjust size if necessary */
+    }
+
+    #overlay .close-button {
+      position: absolute;
+      top: 10px;
+      right: 0;
+      font-size: 40px;
+      cursor: pointer;
+      color: #230903;
+      background: none;
+      border: none;
+    }
+
+    #overlay .close-button:hover {
+      color: #632727;
+    }
+  </style>
+</head>
+<body>
+<div class="left">
+  <div class="nav-buttons">
+    <button id="left" onclick="changeDate(-1)">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <h2 id="currentDate"></h2>
+    <button id="right" onclick="changeDate(1)">
+      <i class="fas fa-arrow-right"></i>
+    </button>
+  </div>
+
+  <div id="events"></div>
+</div>
+<div class="right">
+
+</div>
+</body>
+<script>
+  let currentDate = new Date();
+
+  do {
+    currentDate.setDate(currentDate.getDate() + 1);
+  } while (currentDate.getDay() === 6 || currentDate.getDay() === 0); // 6 = Saturday, 0 = Sunday
+
+  let currentCalendar = localStorage.getItem('selectedCalendar') || 'PIA23'; // Default to PIA23
+  const ICS_FILES = {
+    'PIA23': 'calendar.ics',
+    'PIB23': 'calendarB.ics',
+    'PIC23': 'calendarC.ics',
+    'WI23': 'calendarW.ics',
+    'WIA24': 'calendarWIA24.ics',
+    'WIB24': 'calendarWIB24.ics'
+  };
+  let months = [
+    "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September",
+    "Oktober","November","Dezember"
+  ];
+
+  let eventColors = JSON.parse(localStorage.getItem('eventColors')) || {};
+  let currentEventBeingColored = null;
+
+  function stringContains(string, containingstring){
+    let wordlength = containingstring.length;
+    for(let i = 0; i < string.length - wordlength; i++){
+      let substring = string.substring(i, i+wordlength);
+      if(substring === containingstring) return true;
+    }
+    return false;
+  }
+
+  function formatDate(date) {
+    return date.toISOString().split("T")[0];
+  }
+
+  function changeDate(days) {
+    do {
+      currentDate.setDate(currentDate.getDate() + days);
+    } while (currentDate.getDay() === 6 || currentDate.getDay() === 0); // 6 = Saturday, 0 = Sunday
+
+    displayDate();
+    fetchEvents();
+  }
+
+  function displayDate() {
+    document.getElementById("currentDate").innerText = getGermanDateLayout(formatDate(currentDate));
+  }
+
+  async function fetchEvents() {
+    const response = await fetch(ICS_FILES[currentCalendar]);
+    const text = await response.text();
+    parseICS(text);
+  }
+
+  function getGermanDateLayout(date) {
+    let newdate = date.split("-");
+    let day = new Date(date).getDay();
+    let weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+    return weekdays[day] + "\n" + newdate[2] + ". " + months[parseInt(newdate[1]) - 1];
+  }
+
+
+  function parseICS(data) {
+    const events = [];
+    const lines = data.split("\n");
+    let event = {};
+
+    lines.forEach(line => {
+      if (line.startsWith("BEGIN:VEVENT")) {
+        event = {};
+      } else if (line.startsWith("END:VEVENT")) {
+        events.push(event);
+      } else {
+        const [key, value] = line.split(/:(.+)/);
+        if (key && value) event[key.trim()] = value.trim();
+      }
+    });
+
+    const filteredEvents = events.filter(e => e["DTSTART"] && formatDate(parseICSTime(e["DTSTART"])) === formatDate(currentDate));
+    displayEvents(filteredEvents, "events");
+    displayExams(events, "exams");
+  }
+
+  function parseICSTime(icsTime) {
+    const match = icsTime.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z?/);
+    if (!match) return new Date();
+    return new Date(Date.UTC(match[1], match[2] - 1, match[3], match[4], match[5], match[6]));
+  }
+  function displayEvents(events, divID) {
+    const eventsContainer = document.getElementById(divID);
+    eventsContainer.innerHTML = "";
+
+    if (events.length === 0) {
+      eventsContainer.innerHTML = "<p>Keine Termine für diesen Tag.</p>";
+      return;
+    }
+
+    const brownMarkedEvents = [];
+    const otherEvents = [];
+
+    events.forEach(event => {
+      const className = event["SUMMARY"];
+      const startingtime = parseICSTime(event["DTSTART"]).toLocaleTimeString().replace(/[AMP]/g, "");
+      const endtime = parseICSTime(event["DTEND"]).toLocaleTimeString().replace(/[AMP]/g, "");
+      const datelocation = (event["LOCATION"] ? event["LOCATION"].split("\\")[0] : "Unbekannter Ort");
+      const prof = (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
+      let heading = event["SUMMARY"].replace(/"/g, "");
+
+      if (heading.length > 19) heading = heading.slice(0, 18);
+
+      const timeStr = startingtime.length === 7 ? "0" + startingtime : startingtime;
+      const endTimeStr = endtime.length === 7 ? "0" + endtime : endtime;
+
+      const div = document.createElement("div");
+      div.className = "event";
+      div.innerHTML = `<div class="time">${timeStr}<br>${endTimeStr}</div>
+                      <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
+
+      // Apply saved color if it exists
+      if (eventColors[event["SUMMARY"]]) {
+        div.classList.add(`color-marked-${eventColors[event["SUMMARY"]]}`);
+      }
+
+      // Special handling for brown (original red-marked)
+      if (eventColors[event["SUMMARY"]] === 'brown') {
+        brownMarkedEvents.push({ div, event });
+      } else {
+        otherEvents.push({ div, event });
+      }
+
+      div.addEventListener('click', () => openColorOverlay(div, event["SUMMARY"]));
+    });
+
+    // Apply styling based on neighbors for all events
+    const allEvents = [...otherEvents, ...brownMarkedEvents];
+    allEvents.forEach(({ div, event }, i) => {
+      const prevEvent = i > 0 ? allEvents[i - 1].event : null;
+      const nextEvent = i < allEvents.length - 1 ? allEvents[i + 1].event : null;
+
+      if (prevEvent && nextEvent &&
+        event["LOCATION"] === prevEvent["LOCATION"] &&
+        event["SUMMARY"] === prevEvent["SUMMARY"] &&
+        event["LOCATION"] === nextEvent["LOCATION"] &&
+        event["SUMMARY"] === nextEvent["SUMMARY"]) {
+        // Only left and right borders remain, and no round corners
+        div.style.borderRadius = "0";
+        div.style.borderLeft = "1px solid " + getBorderColor(div);
+        div.style.borderRight = "1px solid " + getBorderColor(div);
+        div.style.borderTop = "none";
+        div.style.borderBottom = "none";
+        div.style.marginTop = "0";
+      } else if (prevEvent &&
+        event["LOCATION"] === prevEvent["LOCATION"] &&
+        event["SUMMARY"] === prevEvent["SUMMARY"]) {
+        div.style.marginTop = "0";
+        div.style.borderRadius = "0 0 8px 8px";
+        div.style.borderTop = "none";
+      } else if (nextEvent &&
+        event["LOCATION"] === nextEvent["LOCATION"] &&
+        event["SUMMARY"] === nextEvent["SUMMARY"]) {
+        div.style.borderRadius = "8px 8px 0 0";
+        div.style.borderBottom = "none";
+      }
+    });
+
+    // First display other events, then brown-marked events at the bottom
+    otherEvents.forEach(({ div }) => eventsContainer.appendChild(div));
+    brownMarkedEvents.forEach(({ div }) => eventsContainer.appendChild(div));
+  }
+
+  function getBorderColor(element) {
+    if (element.classList.contains('color-marked-red')) return '#cd9e6a';
+    if (element.classList.contains('color-marked-blue')) return '#4682B4';
+    if (element.classList.contains('color-marked-green')) return '#a6bc8f';
+    if (element.classList.contains('color-marked-yellow')) return '#efa6a6';
+    if (element.classList.contains('color-marked-purple')) return '#668698';
+    if (element.classList.contains('color-marked-orange')) return '#baaf98';
+    if (element.classList.contains('color-marked-brown')) return '#c12934';
+    return '#778844'; // Default border color
+  }
+
+  displayDate();
+  fetchEvents();
+</script>
+</html>
