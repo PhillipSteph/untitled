@@ -128,7 +128,6 @@
     .event {
       overflow: hidden;
       font-size:18px;
-      border: 1px solid #778844;
       height: 77px;/*184 for double, 294 for tripple*/
       line-height: 25px;
       padding: 10px;
@@ -457,18 +456,7 @@
       div.className = "event";
       div.innerHTML = `<div class="time">${timeStr}<br>${endTimeStr}</div>
                       <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
-
-      // Apply saved color if it exists
-      if (eventColors[event["SUMMARY"]]) {
-        div.classList.add(`color-marked-${eventColors[event["SUMMARY"]]}`);
-      }
-
-      // Special handling for brown (original red-marked)
-      if (eventColors[event["SUMMARY"]] === 'brown') {
-        brownMarkedEvents.push({ div, event });
-      } else {
-        otherEvents.push({ div, event });
-      }
+      otherEvents.push({ div, event });
 
       div.addEventListener('click', () => openColorOverlay(div, event["SUMMARY"]));
     });
@@ -486,8 +474,6 @@
         event["SUMMARY"] === nextEvent["SUMMARY"]) {
         // Only left and right borders remain, and no round corners
         div.style.borderRadius = "0";
-        div.style.borderLeft = "1px solid " + getBorderColor(div);
-        div.style.borderRight = "1px solid " + getBorderColor(div);
         div.style.borderTop = "none";
         div.style.borderBottom = "none";
         div.style.marginTop = "0";
