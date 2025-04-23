@@ -322,9 +322,9 @@
 <script>
   let currentDate = new Date();
 
-  do {
+  while (currentDate.getDay() === 6 || currentDate.getDay() === 0) {
     currentDate.setDate(currentDate.getDate() + 1);
-  } while (currentDate.getDay() === 6 || currentDate.getDay() === 0); // 6 = Saturday, 0 = Sunday
+  }
 
   let currentCalendar = localStorage.getItem('selectedCalendar') || 'PIA23'; // Default to PIA23
   const ICS_FILES = {

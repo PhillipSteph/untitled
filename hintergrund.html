@@ -302,9 +302,9 @@
 <script>
   let currentDate = new Date();
 
-  do {
+  while (currentDate.getDay() === 6 || currentDate.getDay() === 0) {
     currentDate.setDate(currentDate.getDate() + 1);
-  } while (currentDate.getDay() === 6 || currentDate.getDay() === 0); // 6 = Saturday, 0 = Sunday
+  }
 
   let currentCalendar = localStorage.getItem('selectedCalendar') || 'PIA23'; // Default to PIA23
   const ICS_FILES = {
@@ -361,8 +361,6 @@
     let weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
     return weekdays[day] + "\n" + newdate[2] + ". " + months[parseInt(newdate[1]) - 1];
   }
-
-
   function parseICS(data) {
     const events = [];
     const lines = data.split("\n");
@@ -381,7 +379,6 @@
 
     const filteredEvents = events.filter(e => e["DTSTART"] && formatDate(parseICSTime(e["DTSTART"])) === formatDate(currentDate));
     displayEvents(filteredEvents, "events");
-    displayExams(events, "exams");
   }
 
   function parseICSTime(icsTime) {
