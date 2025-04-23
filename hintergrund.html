@@ -158,15 +158,62 @@
     text-align: left;
     margin-left: 7px;
   }
-    /* Color marked events */
-    .color-marked-default { background-color: #BBC893; border-color: #778844; }
-    .color-marked-brown { background-color: #F6A2A7; border-color: #c12934;}
-    .color-marked-purple { background-color: #C6D8E7; border-color: #668698; }
-    .color-marked-green { background-color: #E1ECD5; border-color: #a6bc8f; }
-    .color-marked-red { background-color: #EAC49A; border-color: #cd9e6a; }
-    .color-marked-orange { background-color: #FDF0D5; border-color: #baaf98; }
-    .color-marked-yellow { background-color: #FFD6D6; border-color: #efa6a6; }
-    /* Color selection overlay */
+    .color-marked-default {
+      background-color: rgba(187, 200, 147, 0.25);
+      border-color: #778844;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(119, 136, 68, 0.2);
+      border-radius: 12px;
+    }
+
+    .color-marked-brown {
+      background-color: rgba(246, 162, 167, 0.25);
+      border-color: #c12934;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(193, 41, 52, 0.2);
+      border-radius: 12px;
+    }
+
+    .color-marked-purple {
+      background-color: rgba(198, 216, 231, 0.25);
+      border-color: #668698;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(102, 134, 152, 0.2);
+      border-radius: 12px;
+    }
+
+    .color-marked-green {
+      background-color: rgba(225, 236, 213, 0.25);
+      border-color: #a6bc8f;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(166, 188, 143, 0.2);
+      border-radius: 12px;
+    }
+
+    .color-marked-red {
+      background-color: rgba(234, 196, 154, 0.25);
+      border-color: #cd9e6a;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(205, 158, 106, 0.2);
+      border-radius: 12px;
+    }
+
+    .color-marked-orange {
+      background-color: rgba(253, 240, 213, 0.25);
+      border-color: #baaf98;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(186, 175, 152, 0.2);
+      border-radius: 12px;
+    }
+
+    .color-marked-yellow {
+      background-color: rgba(255, 214, 214, 0.25);
+      border-color: #efa6a6;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(239, 166, 166, 0.2);
+      border-radius: 12px;
+    }
+
     #colorOverlay {
       position: fixed;
       left: 50%;
