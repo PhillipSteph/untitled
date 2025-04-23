@@ -151,7 +151,6 @@
       margin-left: 7px;
     }
   .right{
-    padding-right: 25px;
     width: 60%;
     float: right;
     font-size: 15px;
@@ -408,7 +407,7 @@
       const prof = (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
       let heading = event["SUMMARY"].replace(/"/g, "");
 
-      if (heading.length > 15) heading = heading.slice(0, 14);
+      if (heading.length > 18) heading = heading.slice(0, 17);
 
       const timeStr = startingtime.length === 7 ? "0" + startingtime : startingtime;
       const endTimeStr = endtime.length === 7 ? "0" + endtime : endtime;
