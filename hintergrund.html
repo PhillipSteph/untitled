@@ -407,7 +407,7 @@
       const prof = (event["LOCATION"] ? event["LOCATION"].split(",")[1] : "Unbekannter Professor");
       let heading = event["SUMMARY"].replace(/"/g, "");
 
-      if (heading.length > 19) heading = heading.slice(0, 18);
+      if (heading.length > 16) heading = heading.slice(0, 15);
 
       const timeStr = startingtime.length === 7 ? "0" + startingtime : startingtime;
       const endTimeStr = endtime.length === 7 ? "0" + endtime : endtime;
