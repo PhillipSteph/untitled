@@ -457,8 +457,12 @@
       div.className = "event";
       div.innerHTML = `<div class="time">${timeStr}<br>${endTimeStr}</div>
                       <div class="right"><strong>${heading}</strong><div class="location>">${datelocation} <br> ${prof}</div></div>`;
-      otherEvents.push({ div, event });
-
+// Special handling for brown (original red-marked)
+      if (eventColors[event["SUMMARY"]] === 'brown') {
+        brownMarkedEvents.push({ div, event });
+      } else {
+        otherEvents.push({ div, event });
+      }
       div.addEventListener('click', () => openColorOverlay(div, event["SUMMARY"]));
     });
 
