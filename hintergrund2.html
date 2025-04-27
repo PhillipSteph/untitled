@@ -23,36 +23,62 @@
       font-size: 11px;
       color: black;
     }
-    .events-container {
+    .windowsmall {
+      width: 240px;
+      height: 500px;
+      font-size: 50px;
+      background-image: url("windowsmall.png");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      height: 100%;
+      flex-direction: column; /* Arrange children vertically */
     }
+
+    .events-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column; /* Arrange events vertically */
+      gap: 10px;
+      flex-grow: 1; /* Occupy remaining space */
+    }
+
     #events {
       flex-grow: 1;
-      max-width: 100%;
+      max-width: 95%;
+      margin-left: 3%;
     }
+
     button#left,
     button#right {
-      width: 30px;
-      height: 100%;
-      font-size: 32px;
+      width: 50%; /* Each button takes half the width */
+      height: 30px; /* Fixed height for buttons */
+      font-size: calc(2vw);
+      margin-bottom: -10px;
       font-weight: 100;
       background-color: transparent;
       border: none;
       color: rgba(255, 255, 255, 0.55);
+      display: inline-flex; /* Use inline-flex to keep them in the same row */
+      justify-content: center; /* Center the button text */
     }
 
+    .buttons-container {
+      margin-top:60px;
+      display: flex;
+      width: 100%; /* Ensure the container is full width */
+      justify-content: space-between; /* Space the buttons equally */
+    }
 
     .left {
-      width: calc(25% + 40px);
+      width: 30%;
       height: 100%;
-      overflow: hidden;
+      display: flex;
+      justify-content: center;   /* horizontal centering */
+      align-items: center;       /* vertical centering */
     }
     .mainright {
-      width: 80%;
+      width: 70%;
       height: 100%;
       display: flex;
       justify-content: center;   /* horizontal centering */
@@ -75,44 +101,41 @@
     }
     button:hover { color: #632727; }
     #events {
-      height: fit-content;
+      height: 380px;
+      -ms-overflow-style: none;  /* For Internet Explorer 10+ */
+      scrollbar-width: none;  /* For Firefox */
+      overflow: scroll;
       width: 100%;
     }
+    #events::-webkit-scrollbar {
+      display: none;  /* For Chrome, Safari, and Edge */
+    }
     .event {
+      width: 100%;
       overflow: hidden;
-      font-size:18px;
-      height: 77px;/*184 for double, 294 for tripple*/
-      line-height: 25px;
+      font-size:calc(0.9vw);
+      height: fit-content;/*184 for double, 294 for tripple*/
+      line-height: calc(2.5vh);
       padding: 10px;
-      margin-top: 10px;
       cursor: pointer;
-      border: 1px solid rgba(0, 0, 0, 0.57);
-      background-color: rgba(255, 255, 255, 0.25);
-      backdrop-filter: blur(8px);
-      border-radius: 12px;
     }
     .event strong { display: block; font-weight: 500; }
-    .event .location { font-size: 0.9em; }
+    .event .location { font-size: calc(1vw); }
 
     .time {
       padding-right: 25px;
       width: 30%;
       float: left;
-      font-size: 17px;
-      line-height: 30px;
       text-align: left;
       margin-left: 7px;
     }
     .date {
       float: left;
       margin-right: 20px;
-
     }
   .right{
     width: 60%;
     float: right;
-    font-size: 15px;
-    line-height: 20px;
     text-align: left;
     margin-left: 7px;
   }
@@ -120,10 +143,14 @@
 </head>
 <body>
 <div class="left">
-  <div class="events-container">
-    <button id="left" onclick="changeDate(-1)"><</button>
-    <div id="events"></div>
-    <button id="right" onclick="changeDate(1)">></button>
+  <div class="windowsmall">
+    <div class="events-container">
+      <div class="buttons-container">
+        <button id="left" onclick="changeDate(-1)"><</button>
+        <button id="right" onclick="changeDate(1)">></button>
+      </div>
+      <div id="events"></div>
+    </div>
   </div>
 </div>
 <div class="mainright">
@@ -293,15 +320,12 @@
         event["SUMMARY"] === nextEvent["SUMMARY"]) {
         // Only left and right borders remain, and no round corners
         div.style.borderRadius = "0";
-        div.style.borderLeft = "1px solid " + getBorderColor(div);
-        div.style.borderRight = "1px solid " + getBorderColor(div);
         div.style.borderTop = "none";
-        div.style.borderBottom = "none";
-        div.style.marginTop = "0";
+        div.style.borderBottom = "none";;
       } else if (prevEvent &&
         event["LOCATION"] === prevEvent["LOCATION"] &&
         event["SUMMARY"] === prevEvent["SUMMARY"]) {
-        div.style.marginTop = "0";
+        div.style.marginBottom = "15px";
         div.style.borderRadius = "0 0 8px 8px";
         div.style.borderTop = "none";
       } else if (nextEvent &&
